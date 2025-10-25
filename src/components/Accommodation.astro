@@ -1,0 +1,94 @@
+---
+const { id } = Astro.props;
+const icon = "/icons/generalSections/010-bed.png";
+const parkingIcon = "/icons/generalSections/013-parking-area.png";
+---
+
+<div id={id} class="section-block">
+    <h3 class="section-title">Accomodation</h3>
+    <div class="section-content">
+        <img class="section-icon accomodation-icon" src={icon} />
+        <div class="section-content-text-block">
+            <p class="section-content-text">
+                Rooms have been reserved for family & family friends of Mark &
+                Ros Ashton at:
+            </p>
+        </div>
+    </div>
+    <div class="section-content">
+        <div class="address-content">
+            <div class="address-section">
+                <p class="section-content-text">
+                    <a href="https://manorabberley.co.uk/">The Manor Arms</a>
+                </p>
+                <p class="section-content-text">Abberley</p>
+                <p class="section-content-text">Worcester</p>
+                <p class="section-content-text">WR6 6BN</p>
+            </div>
+            <div class="address-section">
+                <p class="section-content-text">
+                    <a href="https://www.thedewdrop.co.uk/">The Dewdrop Inn</a>
+                </p>
+                <p class="section-content-text">Bell Lane</p>
+                <p class="section-content-text">Lower Broadheath</p>
+                <p class="section-content-text">Worcester</p>
+                <p class="section-content-text">WR2 6RR</p>
+            </div>
+        </div>
+    </div>
+    <div class="section-content">
+        <span class="icon-ghost"></span>
+        <div class="section-content-text-block">
+            <p class="section-content-text">
+                Please contact us at email above or give us a call for further
+                details on room allocation.
+            </p>
+            <p class="section-content-text">
+                We recommend the <a
+                    href="https://www.premierinn.com/gb/en/hotels/england/worcestershire/worcester/worcester-city-centre.html?cid=GLBC_WORCRI"
+                    >Premier Inn Worcester City Centre
+                </a> to all of our guests who are not already accommodated at the
+                wedding venue or the two hotels mentioned above.
+            </p>
+        </div>
+    </div>
+    <div class="section-content">
+        <img class="section-icon accomodation-icon" src={parkingIcon} />
+        <div class="section-content-text-block">
+            <p class="section-content-text">
+                Please note there is a car park owned by Worcester County
+                Cricket Club that is open to the public next to the Premier Inn.
+                The next nearest car park is a few minutes’ walk away.
+            </p>
+            <p class="section-content-text">
+                Worcester County Cricket Club up to 24 hours for £10.00
+            </p>
+            <p class="section-content-text">
+                Tybridge Street up to 24 hours for £3.50 (5 min walk)
+            </p>
+        </div>
+    </div>
+    <div class="section-content">
+        <span class="icon-ghost"></span>
+        <div class="section-content-text-block">
+            <p class="section-content-text">
+                For those guests travelling to Worcester on the day of the
+                wedding and staying at the Premier Inn- we have booked a room
+                for guests to change prior to coach pick-up at 1:00pm. Please do
+                let us know if you will require access to the room to get ready
+                on the morning of the wedding and we can inform the hotel
+                accordingly.
+            </p>
+            <p class="section-content-text">
+                If you are considering staying in Worcester the night before the
+                wedding and would like some recommendations for places to visit,
+                bars and restaurants please email or call us and we’d be happy
+                to make some suggestions.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+
+</style>

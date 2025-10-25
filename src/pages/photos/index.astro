@@ -1,0 +1,16 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { isLoggedIn } from '../../utils/auth';
+
+if (!isLoggedIn()) {
+  return Astro.redirect("/login");
+}
+
+---
+
+<Layout title="Ruby & Owen 2022">
+    <div>
+        <h1>Photos Page</h1>
+    </div>
+</Layout>
+ 

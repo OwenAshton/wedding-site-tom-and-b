@@ -1,0 +1,75 @@
+---
+const { id } = Astro.props;
+const icon = "/icons/generalSections/008-subway.png";
+const airportIcon = "/icons/generalSections/007-airplane.png";
+const busIcon = "/icons/generalSections/009-public-transport.png";
+---
+
+<div id={id} class="section-block">
+    <h3 class="section-title">Transport</h3>
+    <div class="section-content">
+        <img class="section-icon" src={icon} />
+        <div class="section-content-text-block">
+            <h4><strong>Travelling to Worcester:</strong></h4>
+            <p class="section-content-text">
+                The nearest train station is Worcester Foregate Street in the
+                city centre. For trains from Manchester change at Birmingham New
+                Street. Direct trains are available from London Paddington.
+            </p>
+        </div>
+    </div>
+    <div class="section-content">
+        <img class="section-icon" src={airportIcon} />
+        <div class="section-content-text-block">
+            <p class="section-content-text">
+                The nearest airport is Birmingham International. Ryanair and Aer
+                Lingus fly daily from Dublin. Easyjet, Aer Lingus and British
+                Airways fly daily from Belfast. Trains are available from
+                Birmingham International to Worcester Foregate Street station
+                via Birmingham New Street
+            </p>
+        </div>
+    </div>
+    <div class="section-content">
+        <img class="section-icon" src={busIcon} />
+        <div class="section-content-text-block">
+            <h4><strong>Transport to the Ceremony/Venue:</strong></h4>
+            <p class="section-content-text">
+                Please note parking at the church is extremely limited so has
+                been reserved for the wedding party, we have therefore arranged
+                coaches to collect guests from accommodation options above,
+                transport to church, transport to venue after ceremony and
+                transport back to accommodation following wedding reception.
+            </p>
+            <p class="section-content-text">
+                All three journeys will be included in cost per person of £22
+            </p>
+            <h4><strong>Coach 1 Pick-Up</strong></h4>
+            <p class="section-content-text">
+                1:00pm Premier Inn Worcester City Centre
+            </p>
+            <h4><strong>Coach 2 Pick-Up</strong></h4>
+            <p class="section-content-text">1:00pm The Manor Arms, Abberley</p>
+            <p class="section-content-text">
+                1:15pm The Dewdrop Inn, Lower Broadheath
+            </p>
+            <p class="section-content-text">
+                If you would like to book the transport option as outlined above
+                please email with confirmation of name and numbers and we can
+                provide you with our bank transfer details.
+            </p>
+            <p class="section-content-text">
+                If using a local taxi service - we have estimated the cost to be
+                £125 minimum(4 person) for all three journeys (most local companies have
+                50% surcharge for hiring after midnight). Please note the church
+                is accessed via a narrow country lane, therefore taxis will not
+                be able to drop guests directly outside. It is a 100m walk from
+                the main road to the church for drop-off/pick-up.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+
+</style>

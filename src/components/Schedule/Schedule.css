@@ -1,0 +1,82 @@
+.schedule-item-icon{
+    height: 4rem;
+	width: 4rem;
+    margin: 2rem 1.5rem 2rem 0rem;
+    color: rgb(42, 76, 33);
+}
+
+.schedule-item-text{
+    margin: 1rem;
+    flex-grow: 2;
+    min-width: 5rem;
+}
+
+.schedule-item-time{
+    margin: 1rem 1rem 1rem 0rem;
+    min-width: 4rem;
+}
+
+
+.schedule-item-line-point{
+    display:inline-flex;
+    margin-right:1rem;
+    width: 4rem;
+    height: 2px;
+    background-color: rgb(42, 76, 33);;
+    transform: translateX(-0.5rem);
+    flex-shrink: 3;
+}
+
+.schedule-item-line-point.mobile{
+    display:inline-flex;
+    margin-right:1rem;
+    width: 2rem;
+    height: 2px;
+    background-color: rgb(42, 76, 33);;
+    transform: translateX(-0.5rem);
+    flex-shrink: 3;
+}
+
+.schedule-item-separator{
+    display:inline;
+    width: 2px;
+    height: 8rem;
+    background-color: rgb(42, 76, 33);;
+    margin-left: 1rem;
+    transform: translateY(3.5rem);
+    flex-shrink: 0;
+}
+
+.schedule-item-separator-last{
+    display:inline;
+    width: 2px;
+    height: 1rem;
+    background-color: rgb(42, 76, 33);;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.schedule-container{
+    display:block;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+    align-content: space-between;
+    transform: translateX(23%);
+}
+
+.schedule-container-mobile{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+    padding-left: 2rem;
+}
+
+.schedule-item-container{
+    display:inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+}

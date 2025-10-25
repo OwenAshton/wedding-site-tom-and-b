@@ -1,0 +1,56 @@
+---
+const { id } = Astro.props;
+const sendOffText2 =
+    "The Talbot is a beautiful old inn in the middle of the Worcestershire countryside (approx. 15 mins drive from central Worcester). Lots of parking will be available on site.";
+const sendOffText3 =
+    "If you’d like to attend the brunch please confirm by completing the RSVP card included with your invitation.";
+const icon = "/icons/generalSections/003-just-married.png";
+---
+
+<div id={id} class="section-block">
+    <h3 class="section-title">The Send Off</h3>
+    <div class="section-content">
+        <img class="section-icon" src={icon} />
+        <div class="section-content-text-block">
+            <p class="section-content-text">
+                We’d love to see as many of your lovely faces as possible at our
+                send-off brunch at:
+            </p>
+        </div>
+    </div>
+    <div class="section-content">
+        <div class="address-content">
+            <div class="address-section">
+                <p class="section-content-text">The Talbot</p>
+                <p class="section-content-text">Knightwick</p>
+                <p class="section-content-text">Worcester</p>
+                <p class="section-content-text">WR6 5PH</p>
+            </div>
+        </div>
+    </div>
+    <div class="section-content">
+        <span class="icon-ghost"></span>
+        <div class="section-content-text-block">
+            <p class="section-content-text">
+                The Talbot is a beautiful old coaching inn in the middle of the
+                Worcestershire countryside (approx. 15 mins drive from Worcester
+                city centre) with access to riverside walks. Plenty of parking
+                will be available on site.
+            </p>
+            <p class="section-content-text">
+                Bloody Marys and full English will be on hand from 10:00am to
+                cure any hangovers and we’d love the opportunity to say goodbye
+                to all of our guests before we fly off on our honeymoon.
+            </p>
+            <p class="section-content-text">
+                If you’d like to attend the brunch please confirm by completing
+                the RSVP card included with your invitation.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .root {
+    }
+</style>

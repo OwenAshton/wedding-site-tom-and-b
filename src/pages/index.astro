@@ -1,0 +1,213 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/Hero.astro";
+import Welcome from "../components/Welcome.astro";
+import NavItem from "../components/Navbar/NavItem.astro";
+import Navbar from "../components/Navbar/Navbar.jsx";
+import TheDay from "../components/TheDay/TheDay.jsx";
+import SendOff from "../components/SendOff.astro";
+import Gifts from "../components/Gifts.astro";
+import Accommodation from "../components/Accommodation.astro";
+import Transport from "../components/Transport.astro";
+const theDaySectionId = "day-section";
+const theAccommodationSectionId = "accommodation-section";
+const theTransportSectionId = "transport-section";
+const theGiftsSectionId = "gifts-section";
+const theSendOffSectionId = "send-off-section";
+const welcomeSectionId = "welcome-section";
+
+const navbarProperties = [
+	{ "aria-label":"Welcome Message", text:"Welcome", id:welcomeSectionId},
+	{ "aria-label": "The Day Section", text: "The Day", id: theDaySectionId },
+	{
+		"aria-label": "Accommodation Section",
+		text: "Accommodation",
+		id: theAccommodationSectionId,
+	},
+	{
+		"aria-label": "Transport Section",
+		text: "Transport",
+		id: theTransportSectionId,
+	},
+	{ "aria-label": "Gifts Section", text: "Gifts", id: theGiftsSectionId },
+	{
+		"aria-label": "The Send Off Section",
+		text: "The Send Off",
+		id: theSendOffSectionId,
+	},
+];
+
+const googleApiKey = import.meta.env.PUBLIC_GOOGLE_API_KEY;
+const loveBirdsIcon = "/icons/generalSections/011-birds.png";
+---
+
+<Layout title="Ruby & Owen 2022">
+	<main>
+		<Navbar client:load>
+			{
+				navbarProperties.map(
+					({ id, text, "aria-label": ariaLabel }) => (
+						<NavItem {text} {id} aria-label={ariaLabel}>
+							{text}
+						</NavItem>
+					)
+				)
+			}
+		</Navbar>
+		<Hero />
+		<h1>Ruby & Owen</h1>
+		<h2>Tuesday 20th December 2022</h2>
+
+		<ul role="list" class="section-layout">
+			<a class="photos-link" href="/photos">
+			Photos of the wedding are now here! Click here to login.</a>
+			<Welcome id={welcomeSectionId} />
+			<TheDay client:load id={theDaySectionId} googleApiKey={googleApiKey}
+			/>
+			<Accommodation id={theAccommodationSectionId} />
+			<Transport id={theTransportSectionId} />
+			<Gifts id={theGiftsSectionId} />
+			<SendOff id={theSendOffSectionId} />
+			<div class="birds-block">
+				<p>Thank you and see you soon!</p>
+				<img class="birds-icon" src={loveBirdsIcon} />
+			</div>
+		</ul>
+	</main>
+</Layout>
+
+<style>
+	:root {
+	}
+
+	.photos-link {
+		margin-top: 10rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		
+	}
+
+	.birds-block {
+		margin-top: 10rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.birds-icon {
+		display: block;
+		height: 4rem;
+		width: 4rem;
+		margin: 2rem;
+	}
+
+	:global(.accomodation-icon) {
+		margin-bottom: 1rem;
+	}
+	:global(.address-content) {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+	}
+	:global(.address-section) {
+		margin: 0rem 2rem 2rem 2rem;
+	}
+
+	:global(.icon-ghost) {
+		flex-shrink: 0;
+		height: 4rem;
+		width: 4rem;
+		margin: 2rem;
+		min-width: 0;
+	}
+
+	:global(.section-content) {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+	}
+
+	:global(.section-block) {
+		padding: 0.15rem;
+		position: relative;
+	}
+
+	:global(.section-title) {
+		display: block;
+	}
+
+	:global(.section-content-text) {
+		display: block;
+	}
+
+	:global(.section-icon) {
+		display: flex;
+		flex-direction: column;
+		height: 4rem;
+		width: 4rem;
+		margin: 2rem;
+	}
+
+	:global(.section-content) {
+		display: flex;
+		flex-direction: row;
+	}
+
+	:global(.section-content-text-block) {
+		display: flex;
+		flex-direction: column;
+	}
+
+	h1 {
+		justify-content: center;
+		text-align: center;
+		margin: 0 1rem 0 1rem;
+	}
+
+	h2 {
+		justify-content: center;
+		text-align: center;
+		margin: 1rem 0;
+	}
+
+	main {
+		margin: auto;
+		padding: 1em;
+		max-width: 80ch;
+	}
+
+	@media only screen and (max-width: 768px) {
+		:global(.section-icon) {
+			display: block;
+			height: 4rem;
+			width: 4rem;
+			margin: 2rem;
+		}
+		:global(.section-content) {
+			display: flex;
+			flex-direction: column;
+		}
+
+		:global(.icon-ghost) {
+			display: none;
+		}
+	}
+
+	@keyframes pulse {
+		0%,
+		100% {
+			background-position-y: 0%;
+		}
+
+		50% {
+			background-position-y: 80%;
+		}
+	}
+
+	.section-layout {
+		display: block;
+		gap: 1rem;
+		padding: 0;
+	}
+</style>

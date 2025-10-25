@@ -1,0 +1,53 @@
+---
+const welcomeImage = "/owen_ruby_main.jpg";
+
+const {id} = Astro.props;
+---
+
+<div id={id} class="welcome-main">
+    <div class="section-content">
+        <div class="section-content-text-block">
+            <p class="welcome-body"></p><p>We are getting married!</p>
+            <p>
+                Welcome to our wedding website - we&#39ve created this page as a
+                helpful resource for our guests&#39 visit to Worcester. Here you&#39ll find information on our plans
+                for the day, transport and local accommodation options.
+            </p>
+            <p>
+                We&#39ve also set-up a dedicated email account: <a
+                    href="mailto: info@ruby-and-owen-2022.co.uk"
+                    >info@ruby-and-owen-2022.co.uk
+                </a> should you have any questions or need any further advice on
+                travel/accommodation.
+            </p>
+            <p>
+                Don&#39t forget to RSVP and let us know about any dietary
+                preferences by 30th September.
+            </p>
+            <p>
+                We can&#39t wait to celebrate with all of our favourite people!
+            </p>
+            <p>All our love</p>
+            <p>Ruby & Owen xxx</p>
+        </div>
+    </div>
+
+    <img class="welcome-image" src={welcomeImage} />
+</div>
+
+<style>
+    .welcome-main {
+        margin-top: 10rem;
+    }
+
+    .welcome-image {
+        margin-top: 3rem;
+        border-radius: 60%;
+        width: 100%;
+        height: 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        position: relative;
+    }
+</style>
