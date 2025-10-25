@@ -33,7 +33,7 @@ const Schedule = () : FC<{}> =>{
         <div className={isMobile?"schedule-container-mobile":"schedule-container"}>
             <ScheduleItem
                 iconUrl={transportPickUp}
-					text={"Coach Pickup"}
+					text={"Book your own taxis"}
                     time={"1:00pm"}
 					index={1}
 					isLast={false}/>
