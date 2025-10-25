@@ -1,5 +1,4 @@
 import { Status, Wrapper } from "@googlemaps/react-wrapper";
-import { useEffect, useState } from 'react';
 import MapComponent from "../Map/MapComponent";
 import ErrorComponent from "../SiteUtilities/ErrorComponent";
 import "./TheDay.css";
@@ -51,7 +50,8 @@ const TheDay = ({ id, googleApiKey }) => {
 					<ErrorComponent errorMessage="Oh no! something went wrong with the google Api. Maybe google is down! The Horror!" />
 				);
 			case Status.SUCCESS:
-				return <MapComponent />;
+				return <div>Map Currently Disabled. Need to set up new Google Maps project for Tom & B</div>
+				// return <MapComponent />;
 		}
 	};
 
