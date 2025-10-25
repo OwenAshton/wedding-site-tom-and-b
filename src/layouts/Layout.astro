@@ -1,4 +1,29 @@
 ---
+import "../styles/global.css";
+import Navbar from "../components/Navbar/Navbar.jsx";
+import NavItem from "../components/Navbar/NavItem.astro";
+
+const navbarProperties = [
+	{ "aria-label":"Welcome", text:"Welcome", href:"/"},
+	{ "aria-label": "The Day Section", text: "The Day", href: "/the-day" },
+	{
+		"aria-label": "Accommodation Section",
+		text: "Accommodation",
+		href: "/accommodation"
+	},
+	{
+		"aria-label": "Transport Section",
+		text: "Transport",
+		href: "/transport"
+	},
+	{ "aria-label": "Gifts Section", text: "Gifts", href: "/gifts" },
+	{
+		"aria-label": "The Send Off Section",
+		text: "The Send Off",
+		href: "/send-off",
+	},
+];
+
 export interface Props {
 	title: string;
 }
@@ -17,7 +42,20 @@ const { title } = Astro.props as Props;
 	</head>
 
 	<body>
-		<slot />
+		<Navbar client:load>
+			{
+				navbarProperties.map(
+					({ href, text, "aria-label": ariaLabel }) => (
+						<NavItem {text} href={href} aria-label={ariaLabel}>
+							{text}
+						</NavItem>
+					)
+				)
+			}
+		</Navbar>
+		<main>
+			<slot />
+		</main>
 
 		<style>
 			:root {
@@ -25,7 +63,7 @@ const { title } = Astro.props as Props;
 				--font-size-lg: clamp(1.2rem, 0.7vw + 1.2rem, 1.5rem);
 				--font-size-xl: clamp(2.44rem, 2.38vw + 1.85rem, 3.75rem);
 
-				--color-text: rgb(42, 76, 33);
+				--color-text: rgb(67.1, 6.7, 6.7);
 				--color-bg: hsl(0, 0%, 99%);
 				--color-border: hsl(0, 0%, 99%);
 			}

@@ -1,0 +1,11 @@
+---
+import Layout from "../layouts/Layout.astro";
+import TheDayComponent from "../components/TheDay/TheDay.jsx";
+
+const googleApiKey = import.meta.env.PUBLIC_GOOGLE_API_KEY;
+---
+<Layout title="The Day">
+  <main>
+    <TheDayComponent client:load id="day-section" googleApiKey={googleApiKey} />
+  </main>
+</Layout>

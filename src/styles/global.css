@@ -1,0 +1,101 @@
+/* src/styles/global.css */
+.photos-link {
+  margin-top: 10rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.birds-block {
+  margin-top: 10rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.birds-icon {
+  display: block;
+  height: 4rem;
+  width: 4rem;
+  margin: 2rem;
+}
+
+/* your :global rules can be plain class names here */
+.accomodation-icon { margin-bottom: 1rem; }
+.address-content {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+.address-section { margin: 0rem 2rem 2rem 2rem; }
+
+.icon-ghost {
+  flex-shrink: 0;
+  height: 4rem;
+  width: 4rem;
+  margin: 2rem;
+  min-width: 0;
+}
+
+.section-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.section-block { padding: 0.15rem; position: relative; }
+.section-title { display: block; }
+.section-content-text { display: block; }
+.section-icon {
+  display: flex;
+  flex-direction: column;
+  height: 4rem; width: 4rem; margin: 2rem;
+}
+.section-content-text-block { display: flex; flex-direction: column; }
+
+h1, h2 {
+  justify-content: center;
+  text-align: center;
+  margin: 1rem 0;
+}
+h1 { margin: 0 1rem 0 1rem; }
+
+main {
+  margin: auto;
+  padding: 1em;
+  max-width: 80ch;
+}
+
+@media only screen and (max-width: 768px) {
+  .section-icon { display: block; height: 4rem; width: 4rem; margin: 2rem; }
+  .section-content { display: flex; flex-direction: column; }
+  .icon-ghost { display: none; }
+}
+
+@keyframes pulse {
+  0%, 100% { background-position-y: 0%; }
+  50%      { background-position-y: 80%; }
+}
+
+/* your menu grid if you converted <ul> to buttons */
+.section-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+.nav-button {
+  display: inline-block; width: 100%; text-align: center;
+  padding: 0.9rem 1.1rem; border-radius: 999px; text-decoration: none;
+  font-weight: 600; border: 1px solid currentColor;
+  transition: transform 120ms ease, background 120ms ease;
+}
+.nav-button:hover, .nav-button:focus-visible { transform: translateY(-1px); }
+@media (prefers-color-scheme: dark) {
+  .nav-button { color: white; border-color: #444; background: #1d1d1d; }
+  .nav-button:hover { background: #262626; }
+}
+@media (prefers-color-scheme: light) {
+  .nav-button { color: #111; border-color: #ddd; background: #f7f7f7; }
+  .nav-button:hover { background: #efefef; }
+}
