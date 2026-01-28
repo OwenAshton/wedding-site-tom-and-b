@@ -20,6 +20,10 @@
       </div>
 
       <form id="rsvpForm" class="mt-6 space-y-4 hidden">
+        <p class="text-sm">
+        Tip: your partner may also be editing this. If you both save at the same time,
+        you might need to refresh and try again.
+        </p>
         <label class="block">
           <span class="block mb-1">Name</span>
           <input
@@ -63,14 +67,18 @@
           ></textarea>
         </label>
 
-        <div class="flex gap-3">
-          <button id="saveBtn" class="border px-4 py-2" type="submit">
-            Save RSVP
-          </button>
+        <div class="flex gap-3 flex-wrap">
+            <button id="saveBtn" class="border px-4 py-2" type="submit">
+                Save RSVP
+            </button>
 
-          <button id="signOutBtn" class="border px-4 py-2" type="button">
-            Sign out
-          </button>
+            <button id="refreshBtn" class="border px-4 py-2" type="button">
+                Refresh latest
+            </button>
+
+            <button id="signOutBtn" class="border px-4 py-2" type="button">
+                Sign out
+            </button>
         </div>
 
         <p id="meta" class="text-sm"></p>
@@ -81,6 +89,7 @@
       import { supabase } from "../lib/supabaseClient";
 
       let loadedUpdatedAt =null;
+      let conflictMode = false;
 
       const statusBox = document.getElementById("statusBox");
       const statusText = document.getElementById("statusText");
@@ -94,6 +103,7 @@
 
       const saveBtn = document.getElementById("saveBtn");
       const signOutBtn = document.getElementById("signOutBtn");
+      const refreshBtn = document.getElementById("refreshBtn");
 
       function showStatus(text, isError = false) {
         statusBox.classList.remove("hidden");
@@ -110,6 +120,20 @@
         saveBtn.disabled = loading;
         saveBtn.textContent = loading ? "Saving…" : "Save RSVP";
       }
+
+      async function refreshLatest(groupId) {
+        const latest = await loadRsvp(groupId);
+        if (latest) {
+            fillForm(latest);
+            showStatus("Refreshed to the latest saved version.");
+        } else {
+            // No row exists yet
+            loadedUpdatedAt = null;
+            meta.textContent = "No RSVP saved yet.";
+            showStatus("No RSVP has been saved yet.");
+        }
+        conflictMode = false;
+    }
 
       async function requireSession() {
         const { data } = await supabase.auth.getSession();
@@ -187,6 +211,18 @@
             meta.textContent = "No RSVP saved yet.";
           }
 
+          refreshBtn.addEventListener("click", async () => {
+            try {
+                setLoading(true);
+                await refreshLatest(groupId);
+            } catch (err) {
+                showStatus(`Refresh failed: ${err.message ?? err}`, true);
+            } finally {
+                setLoading(false);
+            }
+          });
+
+
           // Submit handler
           form.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -237,8 +273,8 @@
                         if (latest) fillForm(latest);
 
                         showStatus(
-                        "Your partner updated the RSVP while you were editing. We’ve reloaded the latest values — please review and save again.",
-                        true
+                            "Your partner updated the RSVP while you were editing. We’ve loaded the latest values. Please review and save again — or click “Refresh latest”.",
+                            true
                         );
                         return;
                     }
@@ -259,8 +295,8 @@
                         if (latest) fillForm(latest);
 
                         showStatus(
-                        "An RSVP was created by your partner while you were editing. We’ve loaded the latest values — please review and save again.",
-                        true
+                            "An RSVP was created by your partner while you were editing. We’ve loaded the latest values. Please review and save again — or click “Refresh latest”.",
+                            true
                         );
                         return;
                     }
