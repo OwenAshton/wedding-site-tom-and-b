@@ -1,0 +1,293 @@
+---
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>RSVP</title>
+  </head>
+
+  <body class="p-6">
+    <div class="max-w-lg">
+      <h1 class="text-2xl font-bold">RSVP</h1>
+      <p class="mt-2">
+        Either you or your partner can submit/update this. You’ll both see the same details.
+      </p>
+
+      <div id="statusBox" class="mt-4 hidden border p-3" role="status" aria-live="polite">
+        <p id="statusText"></p>
+      </div>
+
+      <form id="rsvpForm" class="mt-6 space-y-4 hidden">
+        <label class="block">
+          <span class="block mb-1">Name</span>
+          <input
+            id="name"
+            class="border p-2 w-full"
+            type="text"
+            autocomplete="name"
+            required
+          />
+        </label>
+
+        <label class="block">
+          <span class="block mb-1">Number of people in party</span>
+          <input
+            id="party_size"
+            class="border p-2 w-full"
+            type="number"
+            min="1"
+            step="1"
+            required
+          />
+        </label>
+
+        <label class="block">
+          <span class="block mb-1">Dietary requirements</span>
+          <textarea
+            id="dietary_requirements"
+            class="border p-2 w-full"
+            rows="3"
+            placeholder="e.g. vegetarian, allergies, etc."
+          ></textarea>
+        </label>
+
+        <label class="block">
+          <span class="block mb-1">Access needs</span>
+          <textarea
+            id="access_needs"
+            class="border p-2 w-full"
+            rows="3"
+            placeholder="e.g. step-free access, hearing assistance, etc."
+          ></textarea>
+        </label>
+
+        <div class="flex gap-3">
+          <button id="saveBtn" class="border px-4 py-2" type="submit">
+            Save RSVP
+          </button>
+
+          <button id="signOutBtn" class="border px-4 py-2" type="button">
+            Sign out
+          </button>
+        </div>
+
+        <p id="meta" class="text-sm"></p>
+      </form>
+    </div>
+
+    <script type="module">
+      import { supabase } from "../lib/supabaseClient";
+
+      let loadedUpdatedAt =null;
+
+      const statusBox = document.getElementById("statusBox");
+      const statusText = document.getElementById("statusText");
+      const form = document.getElementById("rsvpForm");
+      const meta = document.getElementById("meta");
+
+      const nameEl = document.getElementById("name");
+      const partySizeEl = document.getElementById("party_size");
+      const dietaryEl = document.getElementById("dietary_requirements");
+      const accessEl = document.getElementById("access_needs");
+
+      const saveBtn = document.getElementById("saveBtn");
+      const signOutBtn = document.getElementById("signOutBtn");
+
+      function showStatus(text, isError = false) {
+        statusBox.classList.remove("hidden");
+        statusText.textContent = text;
+
+        // simple visual cue without relying on Tailwind colors
+        statusBox.style.borderStyle = "solid";
+        statusBox.style.borderWidth = "1px";
+        statusBox.style.opacity = "1";
+        statusText.style.fontWeight = isError ? "600" : "400";
+      }
+
+      function setLoading(loading) {
+        saveBtn.disabled = loading;
+        saveBtn.textContent = loading ? "Saving…" : "Save RSVP";
+      }
+
+      async function requireSession() {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          window.location.replace("/login-error");
+          return null;
+        }
+        return data.session;
+      }
+
+      async function getGroupId(userId) {
+        const { data: me, error } = await supabase
+          .from("app_users")
+          .select("group_id")
+          .eq("user_id", userId)
+          .single();
+
+        if (error) throw error;
+        if (!me?.group_id) return null;
+        return me.group_id;
+      }
+
+      async function loadRsvp(groupId) {
+        const { data, error } = await supabase
+          .from("rsvp")
+          .select("*")
+          .eq("group_id", groupId)
+          .maybeSingle();
+
+        if (error) throw error;
+        return data; // null if none yet
+      }
+
+      function fillForm(rsvp) {
+        if (!rsvp) return;
+
+        nameEl.value = rsvp.name ?? "";
+        partySizeEl.value = String(rsvp.party_size ?? 1);
+        dietaryEl.value = rsvp.dietary_requirements ?? "";
+        accessEl.value = rsvp.access_needs ?? "";
+
+        loadedUpdatedAt = rsvp.updated_at ?? null;
+
+        if (rsvp.updated_at) {
+          const dt = new Date(rsvp.updated_at);
+          meta.textContent = `Last updated: ${dt.toLocaleString()}`;
+        }else{
+            meta.textContent = "";
+        }
+      }
+
+      async function init() {
+        try {
+          showStatus("Checking access…");
+          const session = await requireSession();
+          if (!session) return;
+
+          const groupId = await getGroupId(session.user.id);
+          if (!groupId) {
+            window.location.replace("/not-invited");
+            return;
+          }
+
+          const existing = await loadRsvp(groupId);
+
+          form.classList.remove("hidden");
+          statusBox.classList.add("hidden");
+
+          if (existing) {
+            fillForm(existing);
+          } else {
+            // sensible defaults
+            partySizeEl.value = "1";
+            loadedUpdatedAt = null;
+            meta.textContent = "No RSVP saved yet.";
+          }
+
+          // Submit handler
+          form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            statusBox.classList.add("hidden");
+
+            try {
+                const nowIso = new Date().toISOString();
+
+                const payload = {
+                group_id: groupId,
+                name: nameEl.value.trim(),
+                party_size: Number(partySizeEl.value),
+                dietary_requirements: dietaryEl.value.trim() || null,
+                access_needs: accessEl.value.trim() || null,
+                updated_at: nowIso,
+                };
+
+                if (!payload.name) throw new Error("Name is required.");
+                if (!Number.isInteger(payload.party_size) || payload.party_size < 1) {
+                throw new Error("Party size must be a whole number (1 or more).");
+                }
+
+                let saved = null;
+
+                if (loadedUpdatedAt) {
+                    // UPDATE with optimistic concurrency check:
+                    // Only succeed if updated_at is still what we loaded.
+                    const { data, error } = await supabase
+                        .from("rsvp")
+                        .update({
+                        name: payload.name,
+                        party_size: payload.party_size,
+                        dietary_requirements: payload.dietary_requirements,
+                        access_needs: payload.access_needs,
+                        updated_at: payload.updated_at,
+                        })
+                        .eq("group_id", groupId)
+                        .eq("updated_at", loadedUpdatedAt)
+                        .select()
+                        .maybeSingle();
+
+                    if (error) throw error;
+
+                    if (!data) {
+                        // Conflict: row exists but updated_at changed since we loaded
+                        const latest = await loadRsvp(groupId);
+                        if (latest) fillForm(latest);
+
+                        showStatus(
+                        "Your partner updated the RSVP while you were editing. We’ve reloaded the latest values — please review and save again.",
+                        true
+                        );
+                        return;
+                    }
+
+                    saved = data;
+                } else {
+                    // INSERT (first one wins). If partner inserted first, we detect and handle it.
+                    const { data, error } = await supabase
+                        .from("rsvp")
+                        .insert(payload)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        // Likely a unique constraint conflict because partner inserted first.
+                        // Reload and tell user.
+                        const latest = await loadRsvp(groupId);
+                        if (latest) fillForm(latest);
+
+                        showStatus(
+                        "An RSVP was created by your partner while you were editing. We’ve loaded the latest values — please review and save again.",
+                        true
+                        );
+                        return;
+                    }
+
+                    saved = data;
+                }
+
+                fillForm(saved);
+                showStatus("Saved successfully.");
+            } catch (err) {
+              showStatus(`Save failed: ${err.message ?? err}`, true);
+            } finally {
+              setLoading(false);
+            }
+          });
+
+          // Sign out
+          signOutBtn.addEventListener("click", async () => {
+            await supabase.auth.signOut();
+            window.location.replace("/login-error");
+          });
+        } catch (err) {
+          showStatus(`Error: ${err.message ?? err}`, true);
+        }
+      }
+
+      init();
+    </script>
+  </body>
+</html>

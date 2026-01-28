@@ -1,0 +1,41 @@
+---
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Sign-in issue</title>
+  </head>
+
+  <body class="p-6">
+    <div class="max-w-lg">
+      <h1 class="text-2xl font-bold">Sign-in issue</h1>
+
+      <p class="mt-4">
+        We couldn’t sign you in using this link.
+      </p>
+
+      <p class="mt-2">
+        Please contact the host and ask for a new invitation link.
+      </p>
+
+      <button
+        id="signOut"
+        class="border px-4 py-2 mt-6"
+        type="button"
+      >
+        Clear session
+      </button>
+    </div>
+
+    <script type="module">
+      import { supabase } from "../lib/supabaseClient";
+
+      document.getElementById("signOut").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.reload();
+      });
+    </script>
+  </body>
+</html>
