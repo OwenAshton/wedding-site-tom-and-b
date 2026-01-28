@@ -11,31 +11,39 @@
     <p id="msg">Signing you in…</p>
 
     <script type="module">
-        import { supabase } from "../../lib/supabaseClient";
-                
+      import { supabase } from "../../lib/supabaseClient";
+
+      const msg = document.getElementById("msg");
+
+      (async () => {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
 
         try {
-            if (!code) {
-            window.location.replace("/login-error");
-            throw new Error("Missing auth code");
-            }
-
-            const { error } = await supabase.auth.exchangeCodeForSession(code);
-            if (error) throw error;
-
-            const { data } = await supabase.auth.getSession();
-            if (!data.session) {
+          if (!code) {
             window.location.replace("/login-error");
             return;
-            }
+          }
 
-            window.location.replace("/guard");
-        } catch (err) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) {
             window.location.replace("/login-error");
-        }
-    </script>
+            return;
+          }
 
+          const { data } = await supabase.auth.getSession();
+          if (!data.session) {
+            window.location.replace("/login-error");
+            return;
+          }
+
+          window.location.replace("/guard");
+        } catch (err) {
+          msg.textContent = `Sign-in error: ${err?.message ?? err}`;
+          // Optional: redirect after a short delay, or immediately:
+          window.location.replace("/login-error");
+        }
+      })();
+    </script>
   </body>
 </html>
