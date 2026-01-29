@@ -2,8 +2,6 @@
 import Layout from "../layouts/Layout.astro";
 import Hero from "../components/Hero.astro";
 import Welcome from "../components/Welcome.astro";
-import NavItem from "../components/Navbar/NavItem.astro";
-import Navbar from "../components/Navbar/Navbar.jsx";
 
 const welcomeSectionId = "welcome-section";
 
@@ -28,15 +26,16 @@ const navbarProperties = [
 	},
 ];
 
-
-const googleApiKey = import.meta.env.PUBLIC_GOOGLE_API_KEY;
-const loveBirdsIcon = "/icons/generalSections/011-birds.png";
-
 ---
 
 <Layout title="Tom & Bryony 2026">
-	<main>
-		
+	<!-- Shown while we check auth -->
+	<main id="checking" class="p-6">
+		<h1>Checking access…</h1>
+	</main>
+
+	<!-- Hidden until access granted -->
+	<main id="content" class="hidden">
 		<Hero />
 		<h1>Tom & Bryony</h1>
 		<h2>27th June 2026</h2>
@@ -44,20 +43,50 @@ const loveBirdsIcon = "/icons/generalSections/011-birds.png";
 		<Welcome id={welcomeSectionId} />
 
 		<ul role="list" class="section-layout">
-			{navbarProperties.map(({ href, text, "aria-label": ariaLabel }) => (
-				<li>
-				<a class="nav-button" href={href} aria-label={ariaLabel}>
-					{text}
-				</a>
-				</li>
-  			))}
+		{navbarProperties.map(({ href, text, "aria-label": ariaLabel }) => (
+			<li>
+			<a class="nav-button" href={href} aria-label={ariaLabel}>
+				{text}
+			</a>
+			</li>
+		))}
 		</ul>
 	</main>
+
+	<script type="module">
+		import { requireInvited } from "../lib/requireInvited";
+		import { supabase } from "../lib/supabaseClient";
+
+		(async () => {
+			const checking = document.getElementById("checking");
+			const content = document.getElementById("content");
+
+			const ctx = await requireInvited();
+			if (!ctx) return; 
+
+			const { groupId } = ctx;
+			const { data: rsvp } = await supabase
+				.from("rsvp")
+				.select("group_id")
+				.eq("group_id", groupId)
+				.maybeSingle();
+
+			// if (!rsvp) {
+			// 	window.location.replace("/rsvp");
+			// 	return;
+			// }
+
+			// Show the page
+			checking.classList.add("hidden");
+			content.classList.remove("hidden");
+    	})();
+  	</script>
 </Layout>
 
 <style>
 	:root {
 	}
 
+	.hidden { display: none; }
 	
 </style>

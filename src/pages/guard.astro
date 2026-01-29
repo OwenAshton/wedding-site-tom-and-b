@@ -7,21 +7,18 @@
     <meta name="viewport" content="width=device-width" />
     <title>Checking access…</title>
   </head>
+
   <body class="p-6">
-    <p id="msg">Checking access…</p>
+    <p>Checking access…</p>
 
     <script type="module">
       import { requireInvited } from "../lib/requireInvited";
 
       (async () => {
         const ctx = await requireInvited();
-        if (!ctx) {
-          // requireInvited already redirected
-          return;
-        }
-
-        // User is logged in + invited
-        window.location.replace("/rsvp");
+        if (!ctx) return;
+        
+        window.location.replace("/");
       })();
     </script>
   </body>
