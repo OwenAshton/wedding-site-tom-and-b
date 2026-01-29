@@ -11,36 +11,18 @@
     <p id="msg">Checking access…</p>
 
     <script type="module">
-      import { supabase } from "../lib/supabaseClient";
+      import { requireInvited } from "../lib/requireInvited";
 
-      const msg = document.getElementById("msg");
-
-      // 1) Are we logged in?
-      const { data: sessionRes } = await supabase.auth.getSession();
-      const session = sessionRes.session;
-
-      if (!session) {
-        window.location.replace("/login-error");
-      } else {
-        // 2) Are we on the invite list? (group_id exists)
-        const userId = session.user.id;
-
-        const { data: me, error } = await supabase
-          .from("app_users")
-          .select("group_id")
-          .eq("user_id", userId)
-          .single();
-
-        if (error) {
-          msg.textContent = `Error reading profile: ${error.message}`;
-        } else if (!me?.group_id) {
-          // Logged in, but not invited
-          window.location.replace("/not-invited");
-        } else {
-          // Success — go to RSVP page
-          window.location.replace("/rsvp");
+      (async () => {
+        const ctx = await requireInvited();
+        if (!ctx) {
+          // requireInvited already redirected
+          return;
         }
-      }
+
+        // User is logged in + invited
+        window.location.replace("/rsvp");
+      })();
     </script>
   </body>
 </html>

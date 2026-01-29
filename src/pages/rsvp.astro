@@ -87,9 +87,9 @@
 
     <script type="module">
       import { supabase } from "../lib/supabaseClient";
+      import { requireInvited } from "../lib/requireInvited";
 
       let loadedUpdatedAt =null;
-      let conflictMode = false;
 
       const statusBox = document.getElementById("statusBox");
       const statusText = document.getElementById("statusText");
@@ -132,29 +132,7 @@
             meta.textContent = "No RSVP saved yet.";
             showStatus("No RSVP has been saved yet.");
         }
-        conflictMode = false;
     }
-
-      async function requireSession() {
-        const { data } = await supabase.auth.getSession();
-        if (!data.session) {
-          window.location.replace("/login-error");
-          return null;
-        }
-        return data.session;
-      }
-
-      async function getGroupId(userId) {
-        const { data: me, error } = await supabase
-          .from("app_users")
-          .select("group_id")
-          .eq("user_id", userId)
-          .single();
-
-        if (error) throw error;
-        if (!me?.group_id) return null;
-        return me.group_id;
-      }
 
       async function loadRsvp(groupId) {
         const { data, error } = await supabase
@@ -188,14 +166,10 @@
       async function init() {
         try {
           showStatus("Checking access…");
-          const session = await requireSession();
-          if (!session) return;
+          const ctx = await requireInvited();
+          if (!ctx) return; // requireInvited already redirected
 
-          const groupId = await getGroupId(session.user.id);
-          if (!groupId) {
-            window.location.replace("/not-invited");
-            return;
-          }
+          const groupId = ctx.groupId;
 
           const existing = await loadRsvp(groupId);
 
@@ -322,6 +296,8 @@
           showStatus(`Error: ${err.message ?? err}`, true);
         }
       }
+
+      
 
       init();
     </script>
