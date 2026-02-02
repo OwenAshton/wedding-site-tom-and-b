@@ -15,33 +15,55 @@
 
       const msg = document.getElementById("msg");
 
-      (async () => {
-        const url = new URL(window.location.href);
-        const code = url.searchParams.get("code");
+      function redirectFail() {
+        window.location.replace("/login-error");
+      }
 
+      debugger;
+
+       (async () => {
         try {
-          if (!code) {
-            window.location.replace("/login-error");
-            return;
+          const url = new URL(window.location.href);
+          const code = url.searchParams.get("code");
+
+          // Case A: PKCE flow returns ?code=... (exchange it)
+          if (code) {
+            const { error } = await supabase.auth.exchangeCodeForSession(code);
+            if (error) return redirectFail();
+          } else {
+            // Case B: Implicit flow returns tokens in the hash fragment
+            const hash = window.location.hash.startsWith("#")
+              ? window.location.hash.slice(1)
+              : window.location.hash;
+
+            const hashParams = new URLSearchParams(hash);
+            const access_token = hashParams.get("access_token");
+            const refresh_token = hashParams.get("refresh_token");
+
+            if (!access_token || !refresh_token) {
+              return redirectFail();
+            }
+
+            const { error } = await supabase.auth.setSession({
+              access_token,
+              refresh_token,
+            });
+
+            if (error) return redirectFail();
+
+            // Clean up the URL (remove tokens from the address bar)
+            window.history.replaceState({}, document.title, url.pathname + url.search);
           }
 
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) {
-            window.location.replace("/login-error");
-            return;
-          }
-
+          // Confirm we now have a session
           const { data } = await supabase.auth.getSession();
-          if (!data.session) {
-            window.location.replace("/login-error");
-            return;
-          }
+          if (!data.session) return redirectFail();
 
+          // Continue to your normal flow
           window.location.replace("/guard");
         } catch (err) {
           msg.textContent = `Sign-in error: ${err?.message ?? err}`;
-          // Optional: redirect after a short delay, or immediately:
-          window.location.replace("/login-error");
+          redirectFail();
         }
       })();
     </script>
