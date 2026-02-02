@@ -16,7 +16,7 @@
 
     <button id="signout" class="border px-4 py-2 mt-6">Sign out</button>
 
-    <script type="module">
+    <script>
       import { supabase } from "../lib/supabaseClient";
       document.getElementById("signout").addEventListener("click", async () => {
         await supabase.auth.signOut();
