@@ -50,10 +50,13 @@ async function upsertInvitedEmail(email, groupId) {
   if (error) throw error;
 }
 
-async function inviteEmail(email) {
+async function inviteEmail(firstName, email) {
   // Sends an invite email from Supabase Auth
   const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${SITE_URL}/auth/callback`,
+    data:{
+      first_name : firstName ?? email
+    }
   });
 
   if (error) {
