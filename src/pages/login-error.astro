@@ -17,24 +17,100 @@
       </p>
 
       <p class="mt-2">
-        Please contact the host and ask for a new invitation link.
+        Enter your email below and we’ll send you a new sign-in link.
       </p>
 
-      <button
-        id="signOut"
-        class="border px-4 py-2 mt-6"
-        type="button"
-      >
-        Clear session
-      </button>
+      <div id="statusBox" class="mt-4 hidden border p-3" role="status" aria-live="polite">
+        <p id="statusText"></p>
+      </div>
+
+      <form id="form" class="mt-6 space-y-3">
+        <label class="block">
+          <span class="block mb-1">Email address</span>
+          <input
+            id="email"
+            class="border p-2 w-full"
+            type="email"
+            autocomplete="email"
+            required
+            placeholder="you@example.com"
+          />
+        </label>
+
+        <button id="sendBtn" class="border px-4 py-2" type="submit">
+          Send new link
+        </button>
+
+        <button id="signOut" class="border px-4 py-2" type="button">
+          Clear session
+        </button>
+      </form>
     </div>
 
     <script>
       import { supabase } from "../lib/supabaseClient";
 
+      const form = document.getElementById("form") as HTMLFormElement;
+      const emailEl = document.getElementById("email") as HTMLInputElement;
+      const statusBox = document.getElementById("statusBox") as HTMLDivElement;
+      const statusText = document.getElementById("statusText") as HTMLParagraphElement;
+      const sendBtn = document.getElementById("sendBtn") as HTMLButtonElement;
+
+      function showStatus(text, isError = false) {
+        statusBox.classList.remove("hidden");
+        statusText.textContent = text;
+        statusText.style.fontWeight = isError ? "600" : "400";
+      }
+
+      function setLoading(loading) {
+        sendBtn.disabled = loading;
+        sendBtn.textContent = loading ? "Sending…" : "Send new link";
+      }
+
       document.getElementById("signOut").addEventListener("click", async () => {
         await supabase.auth.signOut();
         window.location.reload();
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = emailEl.value.trim().toLowerCase();
+        if (!email) return;
+
+        setLoading(true);
+        statusBox.classList.add("hidden");
+
+        try {
+          debugger;
+          // 1) Check guest list via RPC
+          const { data: invited, error: invitedErr } = await supabase.rpc("is_invited", {
+            p_email: email,
+          });
+
+          if (invitedErr) throw invitedErr;
+
+          if (!invited) {
+            window.location.replace("/not-invited");
+            return;
+          }
+
+          // 2) Send a new magic link (OTP email)
+          const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              shouldCreateUser: false, // important: don't allow self-signup
+            },
+          });
+
+          if (error) throw error;
+
+          showStatus("Done — please check your email for a new sign-in link.");
+        } catch (err) {
+          showStatus(`Sorry — something went wrong: ${err.message ?? err}`, true);
+        } finally {
+          setLoading(false);
+        }
       });
     </script>
   </body>
