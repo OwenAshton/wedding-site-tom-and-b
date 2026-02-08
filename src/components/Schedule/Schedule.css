@@ -2,7 +2,7 @@
     height: 4rem;
 	width: 4rem;
     margin: 2rem 1.5rem 2rem 0rem;
-    color: rgb(42, 76, 33);
+    color: var(--color-accent, #C66623);
 }
 
 .schedule-item-text{
@@ -22,7 +22,7 @@
     margin-right:1rem;
     width: 4rem;
     height: 2px;
-    background-color: rgb(42, 76, 33);;
+    background-color: var(--color-highlight, #E996B0);
     transform: translateX(-0.5rem);
     flex-shrink: 3;
 }
@@ -32,7 +32,7 @@
     margin-right:1rem;
     width: 2rem;
     height: 2px;
-    background-color: rgb(42, 76, 33);;
+    background-color: var(--color-highlight, #E996B0);
     transform: translateX(-0.5rem);
     flex-shrink: 3;
 }
@@ -41,7 +41,7 @@
     display:inline;
     width: 2px;
     height: 8rem;
-    background-color: rgb(42, 76, 33);;
+    background-color: var(--color-highlight, #E996B0);
     margin-left: 1rem;
     transform: translateY(3.5rem);
     flex-shrink: 0;
@@ -51,7 +51,7 @@
     display:inline;
     width: 2px;
     height: 1rem;
-    background-color: rgb(42, 76, 33);;
+    background-color: var(--color-highlight, #E996B0);
     margin-left: 1rem;
     flex-shrink: 0;
 }

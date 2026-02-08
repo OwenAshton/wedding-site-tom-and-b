@@ -1,122 +1,172 @@
 ---
+import Layout from "../layouts/Layout.astro";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Sign-in issue</title>
-  </head>
+<Layout title="Sign-in issue">
+  <div class="login-error-wrapper">
+    <h1>Sign-in issue</h1>
 
-  <body class="p-6">
-    <div class="max-w-lg">
-      <h1 class="text-2xl font-bold">Sign-in issue</h1>
+    <p>
+      We couldn't sign you in for the RSVP page.
+    </p>
 
-      <p class="mt-4">
-        We couldn’t sign you in for the RSVP page.
-      </p>
+    <p>
+      Enter your email below and we'll send you a new sign-in link.
+    </p>
 
-      <p class="mt-2">
-        Enter your email below and we’ll send you a new sign-in link.
-      </p>
+    <p>
+      If you just want to see information about the Wedding,
+      <a href="/">click here.</a>
+    </p>
 
-      <p class="mt-2">
-        If you just want to see information about the Wedding, Please 
-      </p>
-      <a href="/">click here:</a>
+    <div id="statusBox" class="status-box hidden" role="status" aria-live="polite">
+      <p id="statusText"></p>
+    </div>
 
-      <div id="statusBox" class="mt-4 hidden border p-3" role="status" aria-live="polite">
-        <p id="statusText"></p>
-      </div>
+    <form id="form" class="login-form">
+      <label class="field">
+        <span class="field-label">Email address</span>
+        <input
+          id="email"
+          class="field-input"
+          type="email"
+          autocomplete="email"
+          required
+          placeholder="you@example.com"
+        />
+      </label>
 
-      <form id="form" class="mt-6 space-y-3">
-        <label class="block">
-          <span class="block mb-1">Email address</span>
-          <input
-            id="email"
-            class="border p-2 w-full"
-            type="email"
-            autocomplete="email"
-            required
-            placeholder="you@example.com"
-          />
-        </label>
-
-        <button id="sendBtn" class="border px-4 py-2" type="submit">
+      <div class="button-group">
+        <button id="sendBtn" class="nav-button" type="submit">
           Send new link
         </button>
 
-        <button id="signOut" class="border px-4 py-2" type="button">
+        <button id="signOut" class="nav-button" type="button">
           Clear session
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
+  </div>
 
-    <script>
-      import { supabase } from "../lib/supabaseClient";
+  <script>
+    import { supabase } from "../lib/supabaseClient";
 
-      const form = document.getElementById("form") as HTMLFormElement;
-      const emailEl = document.getElementById("email") as HTMLInputElement;
-      const statusBox = document.getElementById("statusBox") as HTMLDivElement;
-      const statusText = document.getElementById("statusText") as HTMLParagraphElement;
-      const sendBtn = document.getElementById("sendBtn") as HTMLButtonElement;
+    const form = document.getElementById("form") as HTMLFormElement;
+    const emailEl = document.getElementById("email") as HTMLInputElement;
+    const statusBox = document.getElementById("statusBox") as HTMLDivElement;
+    const statusText = document.getElementById("statusText") as HTMLParagraphElement;
+    const sendBtn = document.getElementById("sendBtn") as HTMLButtonElement;
 
-      function showStatus(text, isError = false) {
-        statusBox.classList.remove("hidden");
-        statusText.textContent = text;
-        statusText.style.fontWeight = isError ? "600" : "400";
-      }
+    function showStatus(text, isError = false) {
+      statusBox.classList.remove("hidden");
+      statusText.textContent = text;
+      statusText.style.fontWeight = isError ? "600" : "400";
+    }
 
-      function setLoading(loading) {
-        sendBtn.disabled = loading;
-        sendBtn.textContent = loading ? "Sending…" : "Send new link";
-      }
+    function setLoading(loading) {
+      sendBtn.disabled = loading;
+      sendBtn.textContent = loading ? "Sending…" : "Send new link";
+    }
 
-      document.getElementById("signOut").addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.reload();
-      });
+    document.getElementById("signOut").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.reload();
+    });
 
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const email = emailEl.value.trim().toLowerCase();
-        if (!email) return;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = emailEl.value.trim().toLowerCase();
+      if (!email) return;
 
-        setLoading(true);
-        statusBox.classList.add("hidden");
+      setLoading(true);
+      statusBox.classList.add("hidden");
 
-        try {
-          debugger;
-          // 1) Check guest list via RPC
-          const { data: invited, error: invitedErr } = await supabase.rpc("is_invited", {
-            p_email: email,
-          });
+      try {
+        // 1) Check guest list via RPC
+        const { data: invited, error: invitedErr } = await supabase.rpc("is_invited", {
+          p_email: email,
+        });
 
-          if (invitedErr) throw invitedErr;
+        if (invitedErr) throw invitedErr;
 
-          if (!invited) {
-            window.location.replace("/not-invited");
-            return;
-          }
-
-          // 2) Send a new magic link (OTP email)
-          const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              emailRedirectTo: `${import.meta.env.SUPABASE_URL}/auth/callback`,
-              shouldCreateUser: false, // important: don't allow self-signup
-            },
-          });
-
-          if (error) throw error;
-
-          showStatus("Done — please check your email for a new sign-in link.");
-        } catch (err) {
-          showStatus(`Sorry — something went wrong: ${err.message ?? err}`, true);
-        } finally {
-          setLoading(false);
+        if (!invited) {
+          window.location.replace("/not-invited");
+          return;
         }
-      });
-    </script>
-  </body>
-</html>
+
+        // 2) Send a new magic link (OTP email)
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${import.meta.env.SUPABASE_URL}/auth/callback`,
+            shouldCreateUser: false, // important: don't allow self-signup
+          },
+        });
+
+        if (error) throw error;
+
+        showStatus("Done — please check your email for a new sign-in link.");
+      } catch (err) {
+        showStatus(`Sorry — something went wrong: ${err.message ?? err}`, true);
+      } finally {
+        setLoading(false);
+      }
+    });
+  </script>
+</Layout>
+
+<style>
+  .hidden { display: none; }
+
+  .login-error-wrapper {
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+
+  .status-box {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+  }
+
+  .login-form {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .field {
+    display: block;
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-family: "Lanenar", sans-serif;
+  }
+
+  .field-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background: transparent;
+    box-sizing: border-box;
+  }
+
+  .field-input:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+</style>

@@ -1,25 +1,18 @@
 ---
+import Layout from "../layouts/Layout.astro";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Checking access…</title>
-  </head>
+<Layout title="Checking access…">
+  <p>Checking access…</p>
 
-  <body class="p-6">
-    <p>Checking access…</p>
+  <script>
+    import { requireInvited } from "../lib/requireInvite";
 
-    <script>
-      import { requireInvited } from "../lib/requireInvite";
+    (async () => {
+      const ctx = await requireInvited();
+      if (!ctx) return;
 
-      (async () => {
-        const ctx = await requireInvited();
-        if (!ctx) return;
-        
-        window.location.replace("/");
-      })();
-    </script>
-  </body>
-</html>
+      window.location.replace("/");
+    })();
+  </script>
+</Layout>

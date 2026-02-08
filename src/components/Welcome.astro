@@ -1,4 +1,5 @@
 ---
+import NavButton from "./NavButton.astro";
 
 const {id} = Astro.props;
 ---
@@ -15,9 +16,9 @@ const {id} = Astro.props;
             <p>
                Please RSVP as soon as possible by clicking below:
             </p>
-            <a class="nav-button" href="/rsvp">
+            <NavButton href="/rsvp">
                 RSVP
-            </a>
+            </NavButton>
             <p>
                 We can&#39t wait to celebrate with all of our favourite people!
             </p>

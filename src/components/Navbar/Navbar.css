@@ -4,7 +4,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 1rem;
-    border-bottom: 1px solid #2a4c21;
+    border-bottom: 1px solid var(--color-highlight, #E996B0);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: hsl(0, 0%, 99%);
+    z-index: 10;
+    box-sizing: border-box;
 }
 
 .nav-burger{
@@ -32,8 +39,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #2a4c21;
-    color: white;
+    background-color: hsl(0, 0%, 99%);
+    color: var(--color-text, #872840);
     position: absolute;
     top: 0;
     left: 0;

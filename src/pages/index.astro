@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import Hero from "../components/Hero.astro";
 import Welcome from "../components/Welcome.astro";
+import NavButton from "../components/NavButton.astro";
 
 const welcomeSectionId = "welcome-section";
 
@@ -45,9 +46,9 @@ const navbarProperties = [
 		<ul role="list" class="section-layout">
 		{navbarProperties.map(({ href, text, "aria-label": ariaLabel }) => (
 			<li>
-			<a class="nav-button" href={href} aria-label={ariaLabel}>
-				{text}
-			</a>
+				<NavButton href={href} aria-label={ariaLabel}>
+					{text}
+				</NavButton>
 			</li>
 		))}
 		</ul>

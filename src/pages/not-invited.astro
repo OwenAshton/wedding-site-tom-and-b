@@ -1,27 +1,28 @@
 ---
+import Layout from "../layouts/Layout.astro";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Access not available</title>
-  </head>
-  <body class="p-6">
-    <h1 class="text-2xl font-bold">Access not available</h1>
-    <p class="mt-2">
-      This email address isn’t on the guest list. If you think this is a mistake,
-      contact the host.
-    </p>
+<Layout title="Access not available">
+  <h1>Access not available</h1>
+  <p>
+    This email address isn't on the guest list. If you think this is a mistake,
+    contact the host.
+  </p>
 
-    <button id="signout" class="border px-4 py-2 mt-6">Sign out</button>
+  <button id="signout" class="nav-button signout-btn">Sign out</button>
 
-    <script>
-      import { supabase } from "../lib/supabaseClient";
-      document.getElementById("signout").addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.replace("/login-error");
-      });
-    </script>
-  </body>
-</html>
+  <script>
+    import { supabase } from "../lib/supabaseClient";
+    document.getElementById("signout").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.replace("/login-error");
+    });
+  </script>
+</Layout>
+
+<style>
+  .signout-btn {
+    margin-top: 1.5rem;
+    max-width: 12rem;
+  }
+</style>

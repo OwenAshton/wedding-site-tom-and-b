@@ -1,92 +1,155 @@
 ---
+import Layout from "../layouts/Layout.astro";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>RSVP</title>
-  </head>
+<Layout title="RSVP">
+  <div class="rsvp-wrapper">
+    <h1>RSVP</h1>
+    <p class="rsvp-intro">
+      Either you or your partner can submit/update this. You'll both see the same details.
+    </p>
 
-  <body class="p-6">
-    <div class="max-w-lg">
-      <h1 class="text-2xl font-bold">RSVP</h1>
-      <p class="mt-2">
-        Either you or your partner can submit/update this. You’ll both see the same details.
-      </p>
-
-      <div id="statusBox" class="mt-4 hidden border p-3" role="status" aria-live="polite">
-        <p id="statusText"></p>
-      </div>
-
-      <!-- make sure multi people support up to 3/4 -->
-      <form id="rsvpForm" class="mt-6 space-y-4 hidden">
-        <p class="text-sm">
-        Tip: your partner may also be editing this. If you both save at the same time,
-        you might need to refresh and try again.
-        </p>
-        <label class="block">
-          <span class="block mb-1">Name</span>
-          <input
-            id="name"
-            class="border p-2 w-full"
-            type="text"
-            autocomplete="name"
-            required
-          />
-        </label>
-
-        <label class="block">
-          <span class="block mb-1">Number of people in party</span>
-          <input
-            id="party_size"
-            class="border p-2 w-full"
-            type="number"
-            min="1"
-            step="1"
-            required
-          />
-        </label>
-
-        <label class="block">
-          <span class="block mb-1">Dietary requirements</span>
-          <textarea
-            id="dietary_requirements"
-            class="border p-2 w-full"
-            rows="3"
-            placeholder="e.g. vegetarian, allergies, etc."
-          ></textarea>
-        </label>
-
-        <label class="block">
-          <span class="block mb-1">Access needs</span>
-          <textarea
-            id="access_needs"
-            class="border p-2 w-full"
-            rows="3"
-            placeholder="e.g. step-free access, hearing assistance, child care etc."
-          ></textarea>
-        </label>
-
-        <div class="flex gap-3 flex-wrap">
-            <button id="saveBtn" class="border px-4 py-2" type="submit">
-                Save RSVP
-            </button>
-
-            <button id="refreshBtn" class="border px-4 py-2" type="button">
-                Refresh latest
-            </button>
-
-            <button id="signOutBtn" class="border px-4 py-2" type="button">
-                Sign out
-            </button>
-        </div>
-
-        <p id="meta" class="text-sm"></p>
-      </form>
+    <div id="statusBox" class="status-box hidden" role="status" aria-live="polite">
+      <p id="statusText"></p>
     </div>
 
-    <script src="../lib/rsvp.ts">
-    </script>
-  </body>
-</html>
+    <form id="rsvpForm" class="rsvp-form hidden">
+      <p class="rsvp-tip">
+        Tip: your partner may also be editing this. If you both save at the same time,
+        you might need to refresh and try again.
+      </p>
+
+      <label class="field">
+        <span class="field-label">Name</span>
+        <input
+          id="name"
+          class="field-input"
+          type="text"
+          autocomplete="name"
+          required
+        />
+      </label>
+
+      <label class="field">
+        <span class="field-label">Number of people in party</span>
+        <input
+          id="party_size"
+          class="field-input"
+          type="number"
+          min="1"
+          step="1"
+          required
+        />
+      </label>
+
+      <label class="field">
+        <span class="field-label">Dietary requirements</span>
+        <textarea
+          id="dietary_requirements"
+          class="field-input"
+          rows="3"
+          placeholder="e.g. vegetarian, allergies, etc."
+        ></textarea>
+      </label>
+
+      <label class="field">
+        <span class="field-label">Access needs</span>
+        <textarea
+          id="access_needs"
+          class="field-input"
+          rows="3"
+          placeholder="e.g. step-free access, hearing assistance, child care etc."
+        ></textarea>
+      </label>
+
+      <div class="button-group">
+        <button id="saveBtn" class="nav-button" type="submit">
+          Save RSVP
+        </button>
+        <button id="refreshBtn" class="nav-button" type="button">
+          Refresh latest
+        </button>
+        <button id="signOutBtn" class="nav-button" type="button">
+          Sign out
+        </button>
+      </div>
+
+      <p id="meta" class="rsvp-meta"></p>
+    </form>
+  </div>
+
+  <script>
+    import { initRsvp } from "../lib/rsvp";
+    initRsvp();
+  </script>
+</Layout>
+
+<style>
+  .hidden { display: none; }
+
+  .rsvp-wrapper {
+    max-width: 40rem;
+    margin: 0 auto;
+  }
+
+  .rsvp-intro {
+    margin-top: 0.5rem;
+  }
+
+  .rsvp-tip {
+    font-size: 0.85rem;
+    opacity: 0.75;
+  }
+
+  .status-box {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+  }
+
+  .rsvp-form {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .field {
+    display: block;
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-family: "Lanenar", sans-serif;
+  }
+
+  .field-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background: transparent;
+    box-sizing: border-box;
+  }
+
+  .field-input:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .rsvp-meta {
+    font-size: 0.85rem;
+    opacity: 0.75;
+  }
+</style>

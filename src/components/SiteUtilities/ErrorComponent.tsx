@@ -1,5 +1,5 @@
 const errorStyles = {
-    backgroundColor: 'red',
+    backgroundColor: '#A5455A',
     color: 'white',
     padding: '10px',
     margin: '10px'

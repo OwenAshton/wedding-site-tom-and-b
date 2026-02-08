@@ -1,71 +1,63 @@
 ---
+import Layout from "../../layouts/Layout.astro";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Signing you in…</title>
-  </head>
-  <body class="p-6">
-    <p id="msg">Signing you in…</p>
+<Layout title="Signing you in…">
+  <p id="msg">Signing you in…</p>
 
-    <script>
-      import { supabase } from "../../lib/supabaseClient";
+  <script>
+    import { supabase } from "../../lib/supabaseClient";
 
-      const msg = document.getElementById("msg");
+    const msg = document.getElementById("msg");
 
-      function redirectFail() {
-        window.location.replace("/login-error");
-      }
+    function redirectFail() {
+      window.location.replace("/login-error");
+    }
 
-      debugger;
+     (async () => {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
 
-       (async () => {
-        try {
-          const url = new URL(window.location.href);
-          const code = url.searchParams.get("code");
+        // Case A: PKCE flow returns ?code=... (exchange it)
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) return redirectFail();
+        } else {
+          // Case B: Implicit flow returns tokens in the hash fragment
+          const hash = window.location.hash.startsWith("#")
+            ? window.location.hash.slice(1)
+            : window.location.hash;
 
-          // Case A: PKCE flow returns ?code=... (exchange it)
-          if (code) {
-            const { error } = await supabase.auth.exchangeCodeForSession(code);
-            if (error) return redirectFail();
-          } else {
-            // Case B: Implicit flow returns tokens in the hash fragment
-            const hash = window.location.hash.startsWith("#")
-              ? window.location.hash.slice(1)
-              : window.location.hash;
+          const hashParams = new URLSearchParams(hash);
+          const access_token = hashParams.get("access_token");
+          const refresh_token = hashParams.get("refresh_token");
 
-            const hashParams = new URLSearchParams(hash);
-            const access_token = hashParams.get("access_token");
-            const refresh_token = hashParams.get("refresh_token");
-
-            if (!access_token || !refresh_token) {
-              return redirectFail();
-            }
-
-            const { error } = await supabase.auth.setSession({
-              access_token,
-              refresh_token,
-            });
-
-            if (error) return redirectFail();
-
-            // Clean up the URL (remove tokens from the address bar)
-            window.history.replaceState({}, document.title, url.pathname + url.search);
+          if (!access_token || !refresh_token) {
+            return redirectFail();
           }
 
-          // Confirm we now have a session
-          const { data } = await supabase.auth.getSession();
-          if (!data.session) return redirectFail();
+          const { error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
 
-          // Continue to your normal flow
-          window.location.replace("/guard");
-        } catch (err) {
-          msg.textContent = `Sign-in error: ${err?.message ?? err}`;
-          redirectFail();
+          if (error) return redirectFail();
+
+          // Clean up the URL (remove tokens from the address bar)
+          window.history.replaceState({}, document.title, url.pathname + url.search);
         }
-      })();
-    </script>
-  </body>
-</html>
+
+        // Confirm we now have a session
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) return redirectFail();
+
+        // Continue to your normal flow
+        window.location.replace("/guard");
+      } catch (err) {
+        msg.textContent = `Sign-in error: ${err?.message ?? err}`;
+        redirectFail();
+      }
+    })();
+  </script>
+</Layout>
