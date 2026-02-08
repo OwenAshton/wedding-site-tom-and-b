@@ -35,6 +35,7 @@ function parseCsv(path) {
   const idxEmail = headers.indexOf("email");
   const idxPartner = headers.indexOf("partner_email");
   const idxFirstName = headers.indexOf("first_name");
+  const idxPartnerFirstName = headers.indexOf("partner_first_name");
 
   if (idxEmail === -1) throw new Error("CSV must include a header column named: email");
 
@@ -47,8 +48,9 @@ function parseCsv(path) {
 
     const partner_email = idxPartner >= 0 ? (cols[idxPartner] || "").toLowerCase() : null;
     const first_name = idxFirstName >= 0 ? cols[idxFirstName] || null : null;
+    const partner_first_name = idxPartnerFirstName >= 0 ? cols[idxPartnerFirstName] || null : null;
 
-    rows.push({ email, first_name, partner_email });
+    rows.push({ email, first_name, partner_email, partner_first_name });
   }
 
   return rows;
@@ -166,7 +168,11 @@ async function main() {
     const emails = [r.email, r.partner_email].filter(Boolean);
     const label = [
       r.first_name ? `${r.first_name} <${r.email}>` : r.email,
-      r.partner_email ? r.partner_email : null,
+      r.partner_email
+        ? r.partner_first_name
+          ? `${r.partner_first_name} <${r.partner_email}>`
+          : r.partner_email
+        : null,
     ].filter(Boolean);
 
     console.log(`\nGroup ${groupId}: ${label.join(" + ")}`);
@@ -177,7 +183,7 @@ async function main() {
 
       // 2) send email (invite or OTP sign-in)
       for (const e of emails) {
-        const firstName = e === r.email ? r.first_name : null;
+        const firstName = e === r.email ? r.first_name : r.partner_first_name;
         const res = await inviteOrOtp(existingUsersByEmail, firstName, e);
 
         // If we invited a brand new user, update our cache so future rows won't re-invite them
