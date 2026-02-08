@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # data files
 data/guests.csv
+
+# ai files
+CLAUDE.md
