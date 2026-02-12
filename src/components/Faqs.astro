@@ -1,0 +1,74 @@
+---
+const { id } = Astro.props;
+
+const faqs = [
+	{
+		question: "How do I know when to arrive?",
+		answer: "Your invitation will state the time that you are invited to attend. If you have any questions please get in touch.",
+	},
+	{
+		question: "Is there a deadline to complete my RSVP?",
+		answer: "We will be finalising arrangements on the 27th of May so would ask that you complete your RSVP in plenty of time ahead of that date.",
+	},
+	{
+		question: "What is the Dress Code?",
+		answer: "Please wear your Sunday Best. What this means is individual to you and we would love for you to feel confident and comfortable. It is an outside ceremony on grass so please consider your footwear appropriately as certain heels may not fare well. There will be space in the venue to house any spare shoes you want to bring for dancing.",
+	},
+	{
+		question: "What do I need to bring with me?",
+		answer: "Good vibes, big smiles and your dancing shoes! Also it is Manchester in June so if you want to be prepared, bring your sun cream and shades as well as a brolly or raincoat.",
+	},
+	{
+		question: "Is there a wedding gift registry?",
+		answer: "There is no obligation to give any gift - just having you there is present enough. However if you do wish to contribute, we have a Trailfinders wishlist set up for our honeymoon which you can contribute to here: [link to be added]. You will need to enter these reference numbers to contribute: [numbers to be added]. All contributions are really gratefully received.",
+	},
+	{
+		question: "Can I bring a +1?",
+		answer: "Invites are for RSVPs only but get in touch if you have any questions about this.",
+	},
+	{
+		question: "Can I bring my children?",
+		answer: "Invites are for RSVPs only - if you wish to discuss your invite, please get in touch with us directly.",
+	},
+	{
+		question: "What food will be served?",
+		answer: "Dinner will be a vegetarian sharing platter. There will be pizzas both meat and vegetarian served in the evening. We will make sure there are options for all so please make sure any additional requirements are included on your RSVP. If your requirements change after you have completed the form please get in touch with us directly.",
+	},
+	{
+		question: "Is the venue accessible?",
+		answer: "Yes, generally the venue has a high standard of accessibility with ramps, wide doors and a new accessible toilet area currently being installed. There is also a specific baby changing area. If you have any specific access needs please ensure they are on your RSVP or reach out to us if you are not sure about anything.",
+	},
+	{
+		question: "Can I bring my camera?",
+		answer: "We will have a professional photographer on the day who will be capturing the day until early evening. They work in a natural documentary style so there will be less posed photos and hopefully more photos of people having fun. We'd also love to see your snaps and videos, but please refrain from taking any photos or videos with your phone or camera during the ceremony.",
+	},
+	{
+		question: "Is there parking at the venue?",
+		answer: "There will be limited street parking and a nearby train station car park but you should avoid driving if at all possible.",
+	},
+	{
+		question: "Will there be an open bar?",
+		answer: "No - only the welcome drinks will be provided. There will be an outside bar as well as the pub bar inside for you to purchase your own refreshments. Card and cash are both accepted.",
+	},
+];
+---
+
+<div id={id} class="section-block">
+	<h3 class="section-title">FAQs</h3>
+	{faqs.map(({ question, answer }) => (
+		<div class="faq-item">
+			<h4 class="faq-question">{question}</h4>
+			<p class="section-content-text">{answer}</p>
+		</div>
+	))}
+</div>
+
+<style>
+	.faq-item {
+		margin-bottom: 1.5rem;
+	}
+
+	.faq-question {
+		margin-bottom: 0.25rem;
+	}
+</style>

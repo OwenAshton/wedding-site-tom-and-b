@@ -1,6 +1,7 @@
 ---
-const { href, ariaLabel, text } = Astro.props;
+const { href, ariaLabel, text, subDetails } = Astro.props;
 const parts = (text as string).split(" / ");
+const details = (subDetails as string[] | undefined) ?? [];
 ---
 
 <span class="container">
@@ -11,6 +12,11 @@ const parts = (text as string).split(" / ");
                     ? <>{part} /<br class="slash-break" /> </>
                     : <>{part}</>
             ))}
+            {details.length > 0 && (
+                <span class="sub-details">
+                    {details.join(" · ")}
+                </span>
+            )}
         </span>
     </a>
 </span>
@@ -38,6 +44,15 @@ const parts = (text as string).split(" / ");
     .section-link-text {
         flex: 1;
         text-align: center;
+    }
+
+    .sub-details {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 400;
+        opacity: 0.75;
+        letter-spacing: 0.05em;
+        margin-top: 0.15rem;
     }
 
     .slash-break {
