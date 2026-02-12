@@ -1,12 +1,16 @@
 ---
 const { href, ariaLabel, text } = Astro.props;
-
+const parts = (text as string).split(" / ");
 ---
 
 <span class="container">
     <a class="section-link" aria-label={ariaLabel} {href}>
         <span class="section-link-text">
-            {text}
+            {parts.map((part: string, i: number) => (
+                i < parts.length - 1
+                    ? <>{part} /<br class="slash-break" /> </>
+                    : <>{part}</>
+            ))}
         </span>
     </a>
 </span>
@@ -33,5 +37,16 @@ const { href, ariaLabel, text } = Astro.props;
 
     .section-link-text {
         flex: 1;
+        text-align: center;
+    }
+
+    .slash-break {
+        display: none;
+    }
+
+    @media (max-width: 720px) {
+        .slash-break {
+            display: inline;
+        }
     }
 </style>

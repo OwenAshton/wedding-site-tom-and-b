@@ -3,29 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import Hero from "../components/Hero.astro";
 import Welcome from "../components/Welcome.astro";
 import NavButton from "../components/NavButton.astro";
+import { navbarProperties } from "../lib/navbarProperties";
 
 const welcomeSectionId = "welcome-section";
-
-const navbarProperties = [
-	{ "aria-label":"Welcome", text:"Welcome", href:"/"},
-	{ "aria-label": "The Day Section", text: "The Day", href: "/the-day" },
-	{
-		"aria-label": "Accommodation Section",
-		text: "Accommodation",
-		href: "/accommodation"
-	},
-	{
-		"aria-label": "Transport Section",
-		text: "Transport",
-		href: "/transport"
-	},
-	{ "aria-label": "Gifts Section", text: "Gifts", href: "/gifts" },
-	{
-		"aria-label": "The Send Off Section",
-		text: "The Send Off",
-		href: "/send-off",
-	},
-];
 
 ---
 

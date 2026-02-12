@@ -2,27 +2,7 @@
 import "../styles/global.css";
 import Navbar from "../components/Navbar/Navbar.jsx";
 import NavItem from "../components/Navbar/NavItem.astro";
-
-const navbarProperties = [
-	{ "aria-label":"Welcome", text:"Welcome", href:"/"},
-	{ "aria-label": "The Day Section", text: "The Day", href: "/the-day" },
-	{
-		"aria-label": "Accommodation Section",
-		text: "Accommodation",
-		href: "/accommodation"
-	},
-	{
-		"aria-label": "Transport Section",
-		text: "Transport",
-		href: "/transport"
-	},
-	{ "aria-label": "Gifts Section", text: "Gifts", href: "/gifts" },
-	{
-		"aria-label": "The Send Off Section",
-		text: "The Send Off",
-		href: "/send-off",
-	},
-];
+import { navbarProperties } from "../lib/navbarProperties";
 
 export interface Props {
 	title: string;
