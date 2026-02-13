@@ -8,7 +8,7 @@ const dinnerIcon = '/icons/scheduleIcons/005-wedding-dinner.png';
 const discoIcon = '/icons/scheduleIcons/006-disco-ball.png';
 const carriagesIcon = '/icons/scheduleIcons/003-wedding-car.png';
 
-const Schedule = () : FC<{}> =>{
+const ScheduleComponent = () : FC<{}> =>{
     const [isMobile, setMobileView] = useState(true);
 
     const handleIsMobile = () => {
@@ -88,4 +88,4 @@ const Schedule = () : FC<{}> =>{
         )
 }
 
-export default Schedule;
+export default ScheduleComponent;

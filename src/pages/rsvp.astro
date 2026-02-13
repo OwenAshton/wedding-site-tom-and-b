@@ -19,47 +19,18 @@ import Layout from "../layouts/Layout.astro";
         you might need to refresh and try again.
       </p>
 
-      <label class="field">
-        <span class="field-label">Name</span>
-        <input
-          id="name"
-          class="field-input"
-          type="text"
-          autocomplete="name"
-          required
-        />
-      </label>
+      <div id="membersContainer"></div>
 
       <label class="field">
-        <span class="field-label">Number of people in party</span>
+        <span class="field-label">Additional guests (plus-ones, children, etc.)</span>
         <input
           id="party_size"
           class="field-input"
           type="number"
-          min="1"
+          min="0"
           step="1"
           required
         />
-      </label>
-
-      <label class="field">
-        <span class="field-label">Dietary requirements</span>
-        <textarea
-          id="dietary_requirements"
-          class="field-input"
-          rows="3"
-          placeholder="e.g. vegetarian, allergies, etc."
-        ></textarea>
-      </label>
-
-      <label class="field">
-        <span class="field-label">Access needs</span>
-        <textarea
-          id="access_needs"
-          class="field-input"
-          rows="3"
-          placeholder="e.g. step-free access, hearing assistance, child care etc."
-        ></textarea>
       </label>
 
       <div class="button-group">
@@ -98,21 +69,23 @@ import Layout from "../layouts/Layout.astro";
 
   .rsvp-tip {
     font-size: 0.85rem;
-    opacity: 0.75;
+    color: var(--color-heading);
+    opacity: 0.8;
   }
 
   .status-box {
     margin-top: 1.5rem;
     padding: 0.75rem 1rem;
-    border: 1px solid currentColor;
+    border: 1px solid var(--color-highlight);
     border-radius: 0.5rem;
+    background: hsla(340, 60%, 75%, 0.08);
   }
 
   .rsvp-form {
     margin-top: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
   .field {
@@ -128,7 +101,7 @@ import Layout from "../layouts/Layout.astro";
   .field-input {
     width: 100%;
     padding: 0.5rem 0.75rem;
-    border: 1px solid currentColor;
+    border: 1px solid var(--color-border);
     border-radius: 0.5rem;
     font-family: inherit;
     font-size: inherit;
@@ -138,7 +111,7 @@ import Layout from "../layouts/Layout.astro";
   }
 
   .field-input:focus {
-    outline: 2px solid currentColor;
+    outline: 2px solid var(--color-accent);
     outline-offset: 2px;
   }
 
@@ -148,8 +121,57 @@ import Layout from "../layouts/Layout.astro";
     flex-wrap: wrap;
   }
 
+  #membersContainer :global(.member-section) {
+    border: 1px solid var(--color-highlight);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0;
+  }
+
+  #membersContainer :global(.member-section + .member-section) {
+    margin-top: 1.25rem;
+  }
+
+  #membersContainer :global(.member-legend) {
+    font-family: "HomemadeApple", cursive;
+    font-size: 1rem;
+    color: var(--color-heading);
+    padding: 0 0.25rem;
+  }
+
+  #membersContainer :global(.field) {
+    display: block;
+  }
+
+  #membersContainer :global(.field-label) {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-family: "Lanenar", sans-serif;
+  }
+
+  #membersContainer :global(.field-input) {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    background: transparent;
+    box-sizing: border-box;
+  }
+
+  #membersContainer :global(.field-input:focus) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
   .rsvp-meta {
     font-size: 0.85rem;
+    color: var(--color-heading);
     opacity: 0.75;
   }
 </style>

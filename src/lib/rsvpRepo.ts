@@ -1,6 +1,17 @@
 import { supabase } from "./supabaseClient";
 import { getMyGroupId } from "./getMyGroupId";
 
+/**
+ * RSVP record for a group. The `name`, `dietary_requirements`, and
+ * `access_needs` columns store per-member data as JSON arrays:
+ *
+ *   name:                 '[{"email":"a@x.com","name":"Alice"},{"email":"b@x.com","name":"Bob"}]'
+ *   dietary_requirements: '[{"email":"a@x.com","value":"vegetarian"},{"email":"b@x.com","value":""}]'
+ *   access_needs:         '[{"email":"a@x.com","value":""},{"email":"b@x.com","value":""}]'
+ *
+ * Legacy rows may contain plain strings (pre-migration); the client handles both.
+ * `party_size` is the count of additional guests (plus-ones, children) beyond the named members.
+ */
 export type Rsvp = {
   group_id: string;
   name: string;
