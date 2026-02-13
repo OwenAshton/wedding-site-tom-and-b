@@ -2,8 +2,6 @@
 import Layout from "../layouts/Layout.astro";
 import Hero from "../components/Hero.astro";
 import Welcome from "../components/Welcome.astro";
-import NavButton from "../components/NavButton.astro";
-import { navbarProperties } from "../lib/navbarProperties";
 
 const welcomeSectionId = "welcome-section";
 
@@ -22,16 +20,6 @@ const welcomeSectionId = "welcome-section";
 		<h2>27th June 2026</h2>
 
 		<Welcome id={welcomeSectionId} />
-
-		<ul role="list" class="section-layout">
-		{navbarProperties.map(({ href, text, "aria-label": ariaLabel }) => (
-			<li>
-				<NavButton href={href} aria-label={ariaLabel}>
-					{text}
-				</NavButton>
-			</li>
-		))}
-		</ul>
 	</main>
 
 	<script>
