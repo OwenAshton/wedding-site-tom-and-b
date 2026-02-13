@@ -18,8 +18,8 @@ interface MapProps extends google.maps.MapOptions {
 }
 
 const mapOptions = {
-  center: { lat: 52.2491489, lng: -2.3790567 },
-  zoom: 10.35 ,
+  center: { lat: 53.4443, lng: -2.1946 },
+  zoom: 15,
 } as google.maps.MapOptions; 
 
 const MapComponent: FC<MapProps> =  ({

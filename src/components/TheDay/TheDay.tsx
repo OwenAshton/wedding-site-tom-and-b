@@ -8,8 +8,8 @@ const directionsIcon = "icons/generalSections/008-subway.png";
 const accommodationIcon = "icons/generalSections/010-bed.png";
 const mapIcon = "icons/generalSections/001-wedding.png";
 
-const klondykePosition = { lat: 53.4400, lng: -2.1880 };
-const levenshulmeStationPosition = { lat: 53.4380, lng: -2.1830 };
+const klondykePosition = { lat: 53.4436, lng: -2.1963 };
+const levenshulmeStationPosition = { lat: 53.4449, lng: -2.1930 };
 
 const infoWindowContentStart = "<div id='content'><h4 id='firstHeading' class='firstHeading'>";
 const infoWindowContentEnd = "</div>";
@@ -50,10 +50,7 @@ const TheDay = ({ id, googleApiKey }) => {
 					<p className="the-day-text">
 						We'll be having our ceremony and hosting the reception dinner outside in the lovely pub garden (weather permitting). Later in the evening we'll take the party inside to the function room, next door to which you will find a host of pub favourites - pool, snooker and darts.
 					</p>
-					{/* TODO: Add picture of the Klondyke */}
-					<div className="venue-image-placeholder">
-						<p className="the-day-text"><em>[Klondyke photo to be added]</em></p>
-					</div>
+					<img className="venue-image" src="/the_klondyke.jpg" alt="The Klondyke" />
 				</div>
 			</div>
 

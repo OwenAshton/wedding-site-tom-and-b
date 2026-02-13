@@ -61,6 +61,13 @@
     display: block;
 }
 
+.venue-image {
+    width: 100%;
+    max-width: 30rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
 h3 {
     margin-bottom: 0;
     font-family: "HomemadeApple";
