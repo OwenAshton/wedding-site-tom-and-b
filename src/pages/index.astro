@@ -24,7 +24,6 @@ const welcomeSectionId = "welcome-section";
 
 	<script>
 		import { requireInvited } from "../lib/requireInvite";
-		import { supabase } from "../lib/supabaseClient";
 
 		(async () => {
 			const checking = document.getElementById("checking");
@@ -32,18 +31,6 @@ const welcomeSectionId = "welcome-section";
 
 			const ctx = await requireInvited();
 			if (!ctx) return; 
-
-			const { groupId } = ctx;
-			const { data: rsvp } = await supabase
-				.from("rsvp")
-				.select("group_id")
-				.eq("group_id", groupId)
-				.maybeSingle();
-
-			// if (!rsvp) {
-			// 	window.location.replace("/rsvp");
-			// 	return;
-			// }
 
 			// Show the page
 			checking.classList.add("hidden");

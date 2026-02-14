@@ -98,7 +98,7 @@ import Layout from "../layouts/Layout.astro";
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: `${import.meta.env.SITE_URL}/auth/callback`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
             shouldCreateUser: false, // important: don't allow self-signup
           },
         });

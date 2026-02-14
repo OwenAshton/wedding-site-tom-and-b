@@ -5,7 +5,30 @@ import TheDayComponent from "../components/TheDay/TheDay.jsx";
 const googleApiKey = import.meta.env.PUBLIC_GOOGLE_API_KEY;
 ---
 <Layout title="The Day">
-  <main>
+  <main id="checking" class="p-6">
+    <h1>Checking access…</h1>
+  </main>
+
+  <main id="content" class="hidden">
     <TheDayComponent client:load id="day-section" googleApiKey={googleApiKey} />
   </main>
+
+  <script>
+    import { requireInvited } from "../lib/requireInvite";
+
+    (async () => {
+      const checking = document.getElementById("checking");
+      const content = document.getElementById("content");
+
+      const ctx = await requireInvited();
+      if (!ctx) return;
+
+      checking.classList.add("hidden");
+      content.classList.remove("hidden");
+    })();
+  </script>
 </Layout>
+
+<style>
+  .hidden { display: none; }
+</style>

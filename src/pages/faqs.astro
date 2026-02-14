@@ -3,7 +3,30 @@ import Layout from "../layouts/Layout.astro";
 import FaqsComponent from "../components/Faqs.astro";
 ---
 <Layout title="FAQs">
-  <main>
+  <main id="checking" class="p-6">
+    <h1>Checking access…</h1>
+  </main>
+
+  <main id="content" class="hidden">
     <FaqsComponent id="faqs-section" />
   </main>
+
+  <script>
+    import { requireInvited } from "../lib/requireInvite";
+
+    (async () => {
+      const checking = document.getElementById("checking");
+      const content = document.getElementById("content");
+
+      const ctx = await requireInvited();
+      if (!ctx) return;
+
+      checking.classList.add("hidden");
+      content.classList.remove("hidden");
+    })();
+  </script>
 </Layout>
+
+<style>
+  .hidden { display: none; }
+</style>
