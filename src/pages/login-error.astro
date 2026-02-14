@@ -99,7 +99,7 @@ const siteUrl = import.meta.env.SITE_URL;
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: `${import.meta.env.Site_URL}/auth/callback`,
+            emailRedirectTo: `${import.meta.env.SITE_URL}/auth/callback`,
             shouldCreateUser: false, // important: don't allow self-signup
           },
         });
