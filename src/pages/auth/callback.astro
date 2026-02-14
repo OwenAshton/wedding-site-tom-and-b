@@ -18,13 +18,24 @@ import Layout from "../../layouts/Layout.astro";
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
+        const token_hash = url.searchParams.get("token_hash");
+        const type = url.searchParams.get("type");
 
         // Case A: PKCE flow returns ?code=... (exchange it)
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) return redirectFail();
+
+        // Case B: Email magic link with token_hash (common on mobile)
+        } else if (token_hash && type) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash,
+            type,
+          });
+          if (error) return redirectFail();
+
         } else {
-          // Case B: Implicit flow returns tokens in the hash fragment
+          // Case C: Implicit flow returns tokens in the hash fragment
           const hash = window.location.hash.startsWith("#")
             ? window.location.hash.slice(1)
             : window.location.hash;
