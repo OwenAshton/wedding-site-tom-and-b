@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+const siteUrl = import.meta.env.SITE_URL;
 ---
 
 <Layout title="Sign-in issue">
@@ -98,7 +99,7 @@ import Layout from "../layouts/Layout.astro";
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: `${import.meta.env.Site_URL}/auth/callback`,
             shouldCreateUser: false, // important: don't allow self-signup
           },
         });
