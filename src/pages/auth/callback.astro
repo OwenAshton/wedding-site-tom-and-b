@@ -30,7 +30,7 @@ import Layout from "../../layouts/Layout.astro";
         } else if (token_hash && type) {
           const { error } = await supabase.auth.verifyOtp({
             token_hash,
-            type,
+            type: type as "magiclink" | "email",
           });
           if (error) return redirectFail();
 
