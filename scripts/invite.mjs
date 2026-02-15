@@ -87,7 +87,7 @@ async function fetchAllUsersByEmail() {
 
 async function inviteEmail(firstName, email) {
   const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${SITE_URL}/auth/callback`,
+    redirectTo: `${SITE_URL}/welcome`,
     data: { first_name: firstName ?? email },
   });
 
@@ -119,7 +119,6 @@ async function sendOtpSignIn(email) {
   const { error } = await supabasePublic.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${SITE_URL}/auth/callback`,
       shouldCreateUser: false,
     },
   });

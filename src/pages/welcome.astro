@@ -1,23 +1,15 @@
 ---
 import Layout from "../layouts/Layout.astro";
-const siteUrl = import.meta.env.SITE_URL;
 ---
 
-<Layout title="Sign-in issue">
-  <div class="login-error-wrapper">
-    <h1>Sign-in issue</h1>
+<Layout title="You're Invited!">
+  <div class="welcome-wrapper">
+    <h1>You're Invited!</h1>
 
     <p>
-      We couldn't sign you in for the RSVP page.
-    </p>
-
-    <p>
-      Enter your email below and we'll send you a sign-in code.
-    </p>
-
-    <p>
-      If you just want to see information about the Wedding,
-      <a href="/">click here.</a>
+      We're so excited to have you celebrate with us on our special day.
+      Enter your email and the 8-digit code from your invite email to confirm
+      your place and RSVP.
     </p>
 
     <div id="statusBox" class="status-box hidden" role="status" aria-live="polite">
@@ -25,7 +17,7 @@ const siteUrl = import.meta.env.SITE_URL;
     </div>
 
     <!-- Step 1: Email entry -->
-    <form id="emailForm" class="login-form">
+    <form id="emailForm" class="welcome-form">
       <label class="field">
         <span class="field-label">Email address</span>
         <input
@@ -38,26 +30,20 @@ const siteUrl = import.meta.env.SITE_URL;
         />
       </label>
 
-      <div class="button-group">
-        <button id="sendBtn" class="nav-button" type="submit">
-          Send sign-in code
-        </button>
-
-        <button id="signOut" class="nav-button" type="button">
-          Clear session
-        </button>
-      </div>
+      <button id="nextBtn" class="nav-button" type="submit">
+        Next
+      </button>
     </form>
 
     <!-- Step 2: OTP code entry (hidden initially) -->
-    <form id="otpForm" class="login-form hidden">
+    <form id="otpForm" class="welcome-form hidden">
       <p class="otp-instructions">
-        We sent an 8-digit code to <strong id="sentToEmail"></strong>.
-        <br />Check your inbox and enter it below.
+        Enter the 8-digit code from your invite email for
+        <strong id="sentToEmail"></strong>.
       </p>
 
       <label class="field">
-        <span class="field-label">Sign-in code</span>
+        <span class="field-label">Invite code</span>
         <input
           id="otpCode"
           class="field-input otp-input"
@@ -73,7 +59,7 @@ const siteUrl = import.meta.env.SITE_URL;
 
       <div class="button-group">
         <button id="verifyBtn" class="nav-button" type="submit">
-          Verify code
+          Confirm
         </button>
 
         <button id="backBtn" class="nav-button" type="button">
@@ -82,12 +68,18 @@ const siteUrl = import.meta.env.SITE_URL;
       </div>
 
       <p class="resend-row">
-        Didn't get the email?
+        Lost your code?
         <button id="resendBtn" type="button" class="link-button">
           Send a new code
         </button>
+        <span class="resend-note">(this sends a fresh sign-in code to your email)</span>
       </p>
     </form>
+
+    <p class="returning-user">
+      Already confirmed before?
+      <a href="/login-error">Sign in here instead.</a>
+    </p>
   </div>
 
   <script>
@@ -100,13 +92,14 @@ const siteUrl = import.meta.env.SITE_URL;
     const otpCodeEl = document.getElementById("otpCode") as HTMLInputElement;
     const statusBox = document.getElementById("statusBox") as HTMLDivElement;
     const statusText = document.getElementById("statusText") as HTMLParagraphElement;
-    const sendBtn = document.getElementById("sendBtn") as HTMLButtonElement;
+    const nextBtn = document.getElementById("nextBtn") as HTMLButtonElement;
     const verifyBtn = document.getElementById("verifyBtn") as HTMLButtonElement;
     const backBtn = document.getElementById("backBtn") as HTMLButtonElement;
     const resendBtn = document.getElementById("resendBtn") as HTMLButtonElement;
     const sentToEmail = document.getElementById("sentToEmail") as HTMLElement;
 
     let currentEmail = "";
+    let resendCooldown = false;
 
     // — Helpers —
     function showStatus(text: string, isError = false) {
@@ -131,65 +124,37 @@ const siteUrl = import.meta.env.SITE_URL;
       }
     }
 
-    // — Sign out —
-    document.getElementById("signOut")!.addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      window.location.reload();
-    });
-
-    // — Step 1: Request OTP —
-    async function requestOtp(email: string) {
-      // Check guest list first
-      const { data: invited, error: invitedErr } = await supabase.rpc(
-        "is_invited",
-        { p_email: email }
-      );
-      if (invitedErr) throw invitedErr;
-      if (!invited) {
-        window.location.replace("/not-invited");
-        return false;
-      }
-
-      // Send OTP code (not a magic link — requires email template change)
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: false,
-        },
-      });
-      if (error) throw error;
-      return true;
+    function startResendCooldown() {
+      resendCooldown = true;
+      resendBtn.disabled = true;
+      let seconds = 60;
+      resendBtn.textContent = `Send a new code (${seconds}s)`;
+      const timer = setInterval(() => {
+        seconds -= 1;
+        if (seconds <= 0) {
+          clearInterval(timer);
+          resendCooldown = false;
+          resendBtn.disabled = false;
+          resendBtn.textContent = "Send a new code";
+        } else {
+          resendBtn.textContent = `Send a new code (${seconds}s)`;
+        }
+      }, 1000);
     }
 
-    emailForm.addEventListener("submit", async (e) => {
+    // — Step 1: Capture email and move to code entry —
+    emailForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const email = emailEl.value.trim().toLowerCase();
       if (!email) return;
 
-      sendBtn.disabled = true;
-      sendBtn.textContent = "Sending…";
+      currentEmail = email;
+      sentToEmail.textContent = email;
       hideStatus();
-
-      try {
-        const sent = await requestOtp(email);
-        if (!sent) return; // redirected to /not-invited
-
-        currentEmail = email;
-        sentToEmail.textContent = email;
-        showStep("otp");
-        showStatus("Code sent — check your email.");
-      } catch (err: any) {
-        showStatus(
-          `Sorry — something went wrong: ${err.message ?? err}`,
-          true
-        );
-      } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = "Send sign-in code";
-      }
+      showStep("otp");
     });
 
-    // — Step 2: Verify OTP —
+    // — Step 2: Verify invite OTP —
     otpForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const code = otpCodeEl.value.trim();
@@ -200,25 +165,24 @@ const siteUrl = import.meta.env.SITE_URL;
       hideStatus();
 
       try {
-        const { data, error } = await supabase.auth.verifyOtp({
+        const { error } = await supabase.auth.verifyOtp({
           email: currentEmail,
           token: code,
-          type: "email",
+          type: "invite",
         });
 
         if (error) throw error;
 
-        // Success — redirect to RSVP (or wherever makes sense)
-        showStatus("Signed in! Redirecting…");
+        showStatus("Welcome! Redirecting…");
         window.location.replace("/rsvp");
       } catch (err: any) {
         showStatus(
-          `Invalid or expired code. Please try again or request a new one.`,
+          "Invalid or expired code. Please try again or request a new one.",
           true
         );
       } finally {
         verifyBtn.disabled = false;
-        verifyBtn.textContent = "Verify code";
+        verifyBtn.textContent = "Confirm";
       }
     });
 
@@ -228,19 +192,24 @@ const siteUrl = import.meta.env.SITE_URL;
       showStep("email");
     });
 
-    // — Resend code —
+    // — Resend code (sends a fresh OTP via signInWithOtp) —
     resendBtn.addEventListener("click", async () => {
-      if (!currentEmail) return;
+      if (!currentEmail || resendCooldown) return;
       resendBtn.disabled = true;
       resendBtn.textContent = "Sending…";
       hideStatus();
 
       try {
-        await requestOtp(currentEmail);
+        const { error } = await supabase.auth.signInWithOtp({
+          email: currentEmail,
+          options: { shouldCreateUser: false },
+        });
+        if (error) throw error;
+
         showStatus("New code sent — check your email.");
+        startResendCooldown();
       } catch (err: any) {
         showStatus(`Couldn't resend: ${err.message ?? err}`, true);
-      } finally {
         resendBtn.disabled = false;
         resendBtn.textContent = "Send a new code";
       }
@@ -253,7 +222,7 @@ const siteUrl = import.meta.env.SITE_URL;
     display: none !important;
   }
 
-  .login-error-wrapper {
+  .welcome-wrapper {
     max-width: 40rem;
     margin: 0 auto;
   }
@@ -265,7 +234,7 @@ const siteUrl = import.meta.env.SITE_URL;
     border-radius: 0.5rem;
   }
 
-  .login-form {
+  .welcome-form {
     margin-top: 1.5rem;
     display: flex;
     flex-direction: column;
@@ -320,6 +289,11 @@ const siteUrl = import.meta.env.SITE_URL;
     font-size: 0.9em;
   }
 
+  .resend-note {
+    font-size: 0.85em;
+    opacity: 0.7;
+  }
+
   .link-button {
     background: none;
     border: none;
@@ -338,5 +312,10 @@ const siteUrl = import.meta.env.SITE_URL;
   .link-button:disabled {
     opacity: 0.5;
     cursor: default;
+  }
+
+  .returning-user {
+    margin-top: 2rem;
+    font-size: 0.9em;
   }
 </style>

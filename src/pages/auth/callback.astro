@@ -2,73 +2,13 @@
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Signing you in…">
-  <p id="msg">Signing you in…</p>
+<Layout title="Redirecting…">
+  <p>Redirecting…</p>
 
   <script>
-    import { supabase } from "../../lib/supabaseClient";
-
-    const msg = document.getElementById("msg");
-
-    function redirectFail() {
-      window.location.replace("/login-error");
-    }
-
-     (async () => {
-      try {
-        const url = new URL(window.location.href);
-        const code = url.searchParams.get("code");
-        const token_hash = url.searchParams.get("token_hash");
-        const type = url.searchParams.get("type");
-
-        // Case A: PKCE flow returns ?code=... (exchange it)
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) return redirectFail();
-
-        // Case B: Email magic link with token_hash (common on mobile)
-        } else if (token_hash && type) {
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash,
-            type: type as "magiclink" | "email",
-          });
-          if (error) return redirectFail();
-
-        } else {
-          // Case C: Implicit flow returns tokens in the hash fragment
-          const hash = window.location.hash.startsWith("#")
-            ? window.location.hash.slice(1)
-            : window.location.hash;
-
-          const hashParams = new URLSearchParams(hash);
-          const access_token = hashParams.get("access_token");
-          const refresh_token = hashParams.get("refresh_token");
-
-          if (!access_token || !refresh_token) {
-            return redirectFail();
-          }
-
-          const { error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token,
-          });
-
-          if (error) return redirectFail();
-
-          // Clean up the URL (remove tokens from the address bar)
-          window.history.replaceState({}, document.title, url.pathname + url.search);
-        }
-
-        // Confirm we now have a session
-        const { data } = await supabase.auth.getSession();
-        if (!data.session) return redirectFail();
-
-        // Continue to your normal flow
-        window.location.replace("/guard");
-      } catch (err) {
-        msg.textContent = `Sign-in error: ${err?.message ?? err}`;
-        redirectFail();
-      }
-    })();
+    // OTP codes are now verified client-side on /welcome and /login-error.
+    // This page only exists as a fallback for any old magic link emails.
+    // Redirect to /login-error so the user can request a fresh OTP code.
+    window.location.replace("/login-error");
   </script>
 </Layout>
