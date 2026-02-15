@@ -32,12 +32,12 @@ function parseCsv(path) {
 
   const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
 
+  const idxGroup = headers.indexOf("group");
   const idxEmail = headers.indexOf("email");
-  const idxPartner = headers.indexOf("partner_email");
   const idxFirstName = headers.indexOf("first_name");
-  const idxPartnerFirstName = headers.indexOf("partner_first_name");
 
   if (idxEmail === -1) throw new Error("CSV must include a header column named: email");
+  if (idxGroup === -1) throw new Error("CSV must include a header column named: group");
 
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -46,14 +46,27 @@ function parseCsv(path) {
     const email = (cols[idxEmail] || "").toLowerCase();
     if (!email) continue;
 
-    const partner_email = idxPartner >= 0 ? (cols[idxPartner] || "").toLowerCase() : null;
-    const first_name = idxFirstName >= 0 ? cols[idxFirstName] || null : null;
-    const partner_first_name = idxPartnerFirstName >= 0 ? cols[idxPartnerFirstName] || null : null;
+    const group = cols[idxGroup] || "";
+    if (!group) {
+      console.warn(`Row ${i + 1}: skipping ${email} — no group specified`);
+      continue;
+    }
 
-    rows.push({ email, first_name, partner_email, partner_first_name });
+    const first_name = idxFirstName >= 0 ? cols[idxFirstName] || null : null;
+
+    rows.push({ group, email, first_name });
   }
 
   return rows;
+}
+
+function groupRows(rows) {
+  const groups = new Map(); // group label -> array of { email, first_name }
+  for (const r of rows) {
+    if (!groups.has(r.group)) groups.set(r.group, []);
+    groups.get(r.group).push({ email: r.email, first_name: r.first_name });
+  }
+  return groups;
 }
 
 async function upsertInvitedEmail(email, groupId) {
@@ -67,7 +80,7 @@ async function upsertInvitedEmail(email, groupId) {
 async function fetchAllUsersByEmail() {
   const map = new Map(); // email(lower) -> user
   let page = 1;
-  const perPage = 200; // plenty for your user count
+  const perPage = 200;
 
   while (true) {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
@@ -92,16 +105,15 @@ async function inviteEmail(firstName, email) {
   });
 
   if (error) {
-    console.warn(`Invite issue for ${email}: ${error.message}`);
+    console.warn(`  Invite issue for ${email}: ${error.message}`);
     return { ok: false, mode: "invite", error: error.message };
   }
 
-  console.log(`Invited: ${email} (userId: ${data.user?.id ?? "n/a"})`);
+  console.log(`  Invited: ${email} (userId: ${data.user?.id ?? "n/a"})`);
   return { ok: true, mode: "invite" };
 }
 
 async function updateFirstNameIfNeeded(userId, firstName, email) {
-  // Optional: keep metadata in sync with your CSV
   const desired = firstName ?? email;
 
   const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
@@ -109,13 +121,11 @@ async function updateFirstNameIfNeeded(userId, firstName, email) {
   });
 
   if (error) {
-    console.warn(`Could not update metadata for ${email}: ${error.message}`);
+    console.warn(`  Could not update metadata for ${email}: ${error.message}`);
   }
 }
 
 async function sendOtpSignIn(email) {
-  // This triggers the normal "magic link / OTP" email flow.
-  // shouldCreateUser:false prevents accidental signup. :contentReference[oaicite:2]{index=2}
   const { error } = await supabasePublic.auth.signInWithOtp({
     email,
     options: {
@@ -124,11 +134,11 @@ async function sendOtpSignIn(email) {
   });
 
   if (error) {
-    console.warn(`OTP sign-in issue for ${email}: ${error.message}`);
+    console.warn(`  OTP sign-in issue for ${email}: ${error.message}`);
     return { ok: false, mode: "otp", error: error.message };
   }
 
-  console.log(`Sent OTP/magic-link sign-in: ${email}`);
+  console.log(`  Sent OTP sign-in: ${email}`);
   return { ok: true, mode: "otp" };
 }
 
@@ -136,12 +146,10 @@ async function inviteOrOtp(existingUsersByEmail, firstName, email) {
   const existing = existingUsersByEmail.get(email.toLowerCase());
 
   if (existing) {
-    // user already exists -> send a fresh sign-in email
     await updateFirstNameIfNeeded(existing.id, firstName, email);
     return await sendOtpSignIn(email);
   }
 
-  // user doesn't exist -> invite creates user + sends invite email
   return await inviteEmail(firstName, email);
 }
 
@@ -155,41 +163,30 @@ async function main() {
     return;
   }
 
-  console.log(`Loaded ${rows.length} rows from ${csvPath}`);
+  const groups = groupRows(rows);
+
+  console.log(`Loaded ${rows.length} guests in ${groups.size} groups from ${csvPath}`);
   console.log(dryRun ? "Running in DRY RUN mode (no writes/emails)." : "Running LIVE.");
 
   // Load existing users once
   const existingUsersByEmail = await fetchAllUsersByEmail();
 
-  for (const r of rows) {
+  for (const [groupLabel, members] of groups) {
     const groupId = crypto.randomUUID();
 
-    const emails = [r.email, r.partner_email].filter(Boolean);
-    const label = [
-      r.first_name ? `${r.first_name} <${r.email}>` : r.email,
-      r.partner_email
-        ? r.partner_first_name
-          ? `${r.partner_first_name} <${r.partner_email}>`
-          : r.partner_email
-        : null,
-    ].filter(Boolean);
+    const label = members
+      .map((m) => (m.first_name ? `${m.first_name} <${m.email}>` : m.email))
+      .join(" + ");
 
-    console.log(`\nGroup ${groupId}: ${label.join(" + ")}`);
+    console.log(`\nGroup "${groupLabel}" (${groupId}): ${label}`);
 
     if (!dryRun) {
       // 1) allowlist/group mapping
-      for (const e of emails) await upsertInvitedEmail(e, groupId);
+      for (const m of members) await upsertInvitedEmail(m.email, groupId);
 
       // 2) send email (invite or OTP sign-in)
-      for (const e of emails) {
-        const firstName = e === r.email ? r.first_name : r.partner_first_name;
-        const res = await inviteOrOtp(existingUsersByEmail, firstName, e);
-
-        // If we invited a brand new user, update our cache so future rows won't re-invite them
-        if (res?.mode === "invite" && res.ok) {
-          // refresh cache entry (optional). simplest: reload everything is overkill,
-          // but for small runs you can ignore. If you want, we can fetch user by listing again.
-        }
+      for (const m of members) {
+        await inviteOrOtp(existingUsersByEmail, m.first_name, m.email);
       }
     }
   }
