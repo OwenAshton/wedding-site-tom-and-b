@@ -1,82 +1,124 @@
 ---
-const icon = "/icons/generalSections/004-wedding-presents.png";
+const icon = "/icons/generalSections/007-airplane.png";
+const trailfindersLogo = "/honeymoon/trailfinders.webp";
 
 const { id } = Astro.props;
-const johnLewis = "/logos/John_Lewis_and_Partners-Logo.png";
-const notOnTheHighStreet = "/logos/notOnTheHighStreet.png";
-const argos = "/logos/argos_logo.png";
-const mAndS = "/logos/Marks_and_Spencer-Logo.png";
-const homeSense = "/logos/HomeSense-Logo.png";
-const lakeland = "/logos/Lakeland_company-Logo.png";
-const ikea = "/logos/ikea.png";
+
+const destinations = [
+  { src: "/honeymoon/singapore.jpg", caption: "Singapore" },
+  { src: "/honeymoon/melbourne.jpg", caption: "Melbourne" },
+  { src: "/honeymoon/byron-bay.jpg", caption: "Byron Bay" },
+  { src: "/honeymoon/auckland.jpg", caption: "Auckland" },
+];
 ---
 
 <div id={id} class="section-block">
     <h3 class="section-title">Gifts</h3>
     <div class="section-content">
-        <img class="section-icon" src={icon} />
-        <div class="section-content">
+        <img class="section-icon" src={icon} alt="Airplane" />
+        <div class="section-content-text-block">
             <p class="section-content-text">
-                The best present you could give us is joining us to share our
-                day! If you would like to gift us something, we are hoping to
-                buy our first nest soon and a voucher for one of the following
-                would be very much appreciated:
+                Your presence at our wedding is the greatest gift we could ask for,
+                and we truly mean that. Please don't feel any obligation at all!
+            </p>
+            <p class="section-content-text">
+                However, if you would like to contribute towards our honeymoon to
+                Singapore, Melbourne, Byron Bay, and Auckland, we have set up a
+                wishlist with Trailfinders.
             </p>
         </div>
+        <img class="section-icon icon-ghost" src={icon} alt="" />
     </div>
-    <div class="shopping-gifts-section">
-        <img src={johnLewis} />
-        <img src={notOnTheHighStreet} />
-        <img src={argos} />
-        <img src={ikea} />
+
+    <div class="trailfinders-callout">
+        <img class="trailfinders-logo" src={trailfindersLogo} alt="Trailfinders" />
+        <p>
+            To contribute, visit the Trailfinders wishlist and enter the details below:
+        </p>
+        <div class="trailfinders-details">
+            <p><strong>Reference:</strong> [REFERENCE]</p>
+            <p><strong>Surname:</strong> [SURNAME]</p>
+        </div>
+        <a class="nav-button trailfinders-link" href="https://www.trailfinders.com/wishlist#/" target="_blank" rel="noopener noreferrer">
+            Visit Trailfinders Wishlist
+        </a>
     </div>
-    <div class="shopping-gifts-section">
-        <img src={mAndS} />
-        <img src={homeSense} />
-        <img src={lakeland} />
+
+    <div class="destination-grid">
+        {destinations.map(({ src, caption }) => (
+            <div class="destination-card">
+                <img src={src} alt={caption} />
+                <span>{caption}</span>
+            </div>
+        ))}
     </div>
 </div>
 
 <style>
-    .shopping-gifts-section {
+    .trailfinders-callout {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        margin: 2rem 1rem 1rem 1rem;
+        text-align: center;
+        margin: 2rem auto;
+        padding: 1.5rem 2rem;
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        max-width: 28rem;
     }
 
-    .shopping-gifts-section img {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
+    .trailfinders-logo {
         max-width: 10rem;
-        -webkit-transform: scale(0.75); /* Saf3.1+, Chrome */
-        -moz-transform: scale(0.75); /* FF3.5+ */
-        -ms-transform: scale(0.75); /* IE9 */
-        -o-transform: scale(0.75); /* Opera 10.5+ */
-        transform: scale(0.75);
-        margin: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .trailfinders-details {
+        margin: 1rem 0;
+        padding: 0.75rem 1.5rem;
+        background: rgba(150, 151, 48, 0.08);
+        border-radius: 8px;
+    }
+
+    .trailfinders-details p {
+        margin: 0.25rem 0;
+    }
+
+    .trailfinders-link {
+        margin-top: 1rem;
+    }
+
+    .destination-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin: 2rem 1rem;
+    }
+
+    .destination-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .destination-card img {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .destination-card span {
+        margin-top: 0.5rem;
+        font-weight: 600;
+        color: var(--color-heading);
     }
 
     @media screen and (max-width: 768px) {
-        .shopping-gifts-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .shopping-gifts-section img {
-            max-width: 6rem;
-            -webkit-transform: scale(0.95); /* Saf3.1+, Chrome */
-            -moz-transform: scale(0.95); /* FF3.5+ */
-            -ms-transform: scale(0.95); /* IE9 */
-            -o-transform: scale(0.95); /* Opera 10.5+ */
-            transform: scale(0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        .destination-grid {
+            grid-template-columns: 1fr;
+            max-width: 20rem;
+            margin: 2rem auto;
         }
     }
 </style>
