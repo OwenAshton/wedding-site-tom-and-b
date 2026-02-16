@@ -352,25 +352,49 @@ export async function initRsvp() {
 
                 saved = data;
             } else {
-                // INSERT (first one wins)
-                const { data, error } = await supabase
-                    .from("rsvp")
-                    .insert(payload)
-                    .select()
-                    .single();
+                // Check if a row already exists (e.g. created before
+                // updated_at was populated). If so, update without the
+                // concurrency check rather than attempting an INSERT that
+                // would fail on the unique constraint.
+                const existing = await loadRsvp(groupId);
 
-                if (error) {
-                    const latest = await loadRsvp(groupId);
-                    if (latest) fillForm(latest);
+                if (existing) {
+                    const { data, error } = await supabase
+                        .from("rsvp")
+                        .update({
+                            name: payload.name,
+                            party_size: payload.party_size,
+                            dietary_requirements: payload.dietary_requirements,
+                            access_needs: payload.access_needs,
+                            updated_at: payload.updated_at,
+                        })
+                        .eq("group_id", groupId)
+                        .select()
+                        .maybeSingle();
 
-                    showStatus(
-                        "An RSVP was created by your partner while you were editing. We\u2019ve loaded the latest values. Please review and save again \u2014 or click \u201cRefresh latest\u201d.",
-                        true
-                    );
-                    return;
+                    if (error) throw error;
+                    saved = data;
+                } else {
+                    // INSERT (first one wins)
+                    const { data, error } = await supabase
+                        .from("rsvp")
+                        .insert(payload)
+                        .select()
+                        .single();
+
+                    if (error) {
+                        const latest = await loadRsvp(groupId);
+                        if (latest) fillForm(latest);
+
+                        showStatus(
+                            "An RSVP was created by your partner while you were editing. We\u2019ve loaded the latest values. Please review and save again \u2014 or click \u201cRefresh latest\u201d.",
+                            true
+                        );
+                        return;
+                    }
+
+                    saved = data;
                 }
-
-                saved = data;
             }
 
             fillForm(saved);
