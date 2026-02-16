@@ -20,7 +20,7 @@ const faqs = [
 	},
 	{
 		question: "Is there a wedding gift registry?",
-		answer: "There is no obligation to give any gift - just having you there is present enough. However if you do wish to contribute, we have a Trailfinders wishlist set up for our honeymoon which you can contribute to here: [link to be added]. You will need to enter these reference numbers to contribute: [numbers to be added]. All contributions are really gratefully received.",
+		answer: "There is no obligation to give any gift - just having you there is present enough. However if you do wish to contribute, we have a Trailfinders wishlist set up for our honeymoon - you can find all the details on our <a href='/gifts'>gifts page</a>. All contributions are really gratefully received.",
 	},
 	{
 		question: "Can I bring a +1?",
@@ -58,7 +58,7 @@ const faqs = [
 	{faqs.map(({ question, answer }) => (
 		<div class="faq-item">
 			<h4 class="faq-question">{question}</h4>
-			<p class="section-content-text">{answer}</p>
+			<p class="section-content-text" set:html={answer}></p>
 		</div>
 	))}
 </div>

@@ -19,6 +19,7 @@ export async function initRsvp() {
     const saveBtn = document.getElementById("saveBtn") as HTMLButtonElement;
     const signOutBtn = document.getElementById("signOutBtn") as HTMLButtonElement;
     const refreshBtn = document.getElementById("refreshBtn") as HTMLButtonElement;
+    const exploreNudge = document.getElementById("exploreNudge") as HTMLDivElement | null;
 
     function showStatus(text: string, isError = false) {
         statusBox.classList.remove("hidden");
@@ -314,6 +315,7 @@ export async function initRsvp() {
                 localStorage.setItem(devStorageKey(groupId), JSON.stringify(payload));
                 fillForm(payload);
                 showStatus("Saved locally (dev bypass).");
+                exploreNudge?.classList.remove("hidden");
                 return;
             }
 
@@ -373,6 +375,7 @@ export async function initRsvp() {
 
             fillForm(saved);
             showStatus("Saved successfully.");
+            exploreNudge?.classList.remove("hidden");
         } catch (err: any) {
             showStatus(`Save failed: ${err?.message ?? err}`, true);
         } finally {

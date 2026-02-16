@@ -47,6 +47,26 @@ import Layout from "../layouts/Layout.astro";
 
       <p id="meta" class="rsvp-meta"></p>
     </form>
+
+    <div id="exploreNudge" class="explore-nudge hidden">
+      <p>Now that you're all set, why not take a look around?</p>
+      <div class="explore-links">
+        <a href="/">Welcome / Homepage</a>
+        <a href="/the-day">The Day</a>
+        <a href="/schedule">Schedule</a>
+        <a href="/faqs">FAQs</a>
+      </div>
+    </div>
+
+    <div class="explore-subtle">
+      <p>There's more to explore on the site:</p>
+      <div class="explore-links">
+        <a href="/">Welcome / Homepage</a>
+        <a href="/the-day">The Day</a>
+        <a href="/schedule">Schedule</a>
+        <a href="/faqs">FAQs</a>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -173,5 +193,55 @@ import Layout from "../layouts/Layout.astro";
     font-size: 0.85rem;
     color: var(--color-heading);
     opacity: 0.75;
+  }
+
+  .explore-nudge {
+    margin-top: 2rem;
+    padding: 1.25rem;
+    border: 1px solid var(--color-highlight);
+    border-radius: 0.5rem;
+    background: hsla(340, 60%, 75%, 0.08);
+    text-align: center;
+  }
+
+  .explore-nudge p {
+    font-family: "Lanenar", sans-serif;
+    margin-bottom: 0.75rem;
+  }
+
+  .explore-subtle {
+    margin-top: 2.5rem;
+    text-align: center;
+    opacity: 0.7;
+  }
+
+  .explore-subtle p {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .explore-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .explore-links a {
+    font-family: "HomemadeApple", cursive;
+    color: var(--color-accent, #C66623);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--color-accent, #C66623);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    transition: transform 120ms ease, background 120ms ease, color 120ms ease;
+  }
+
+  .explore-links a:hover,
+  .explore-links a:focus-visible {
+    transform: translateY(-1px);
+    background: var(--color-accent, #C66623);
+    color: white;
   }
 </style>
