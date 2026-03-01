@@ -14,7 +14,7 @@ export async function initRsvp() {
     const meta = document.getElementById("meta") as HTMLParagraphElement;
     const membersContainer = document.getElementById("membersContainer") as HTMLDivElement;
 
-    const partySizeEl = document.getElementById("party_size") as HTMLInputElement;
+    const additionalGuestsEl = document.getElementById("additional_guests") as HTMLInputElement;
     const additionalGuestFields = document.getElementById("additionalGuestFields") as HTMLDivElement;
     const additionalGuestNamesEl = document.getElementById("additional_guest_names") as HTMLInputElement;
     const additionalGuestDetailsEl = document.getElementById("additional_guest_details") as HTMLTextAreaElement;
@@ -40,11 +40,11 @@ export async function initRsvp() {
     }
 
     function toggleAdditionalGuestFields() {
-        const show = Number(partySizeEl.value) > 0;
+        const show = Number(additionalGuestsEl.value) > 0;
         additionalGuestFields.classList.toggle("hidden", !show);
     }
 
-    partySizeEl.addEventListener("input", toggleAdditionalGuestFields);
+    additionalGuestsEl.addEventListener("input", toggleAdditionalGuestFields);
 
     // --- Member section rendering ---
 
@@ -157,7 +157,7 @@ export async function initRsvp() {
             if (accessInput) accessInput.value = accesses.find(a => a.email === email)?.value ?? "";
         }
 
-        partySizeEl.value = String(rsvp.party_size ?? 0);
+        additionalGuestsEl.value = String(rsvp.additional_guests ?? 0);
         additionalGuestNamesEl.value = rsvp.additional_guest_names ?? "";
         additionalGuestDetailsEl.value = rsvp.additional_guest_details ?? "";
         toggleAdditionalGuestFields();
@@ -192,8 +192,8 @@ export async function initRsvp() {
         const hasAnyName = names.some(n => n.name.length > 0);
         if (!hasAnyName) throw new Error("At least one member must have a name.");
 
-        const partySize = Number(partySizeEl.value);
-        if (!Number.isInteger(partySize) || partySize < 0) {
+        const additionalGuests = Number(additionalGuestsEl.value);
+        if (!Number.isInteger(additionalGuests) || additionalGuests < 0) {
             throw new Error("Additional guests must be a whole number (0 or more).");
         }
 
@@ -203,11 +203,11 @@ export async function initRsvp() {
         return {
             group_id: groupId,
             name: JSON.stringify(names),
-            party_size: partySize,
+            additional_guests: additionalGuests,
             dietary_requirements: hasDietary ? JSON.stringify(dietaries) : null,
             access_needs: hasAccess ? JSON.stringify(accesses) : null,
-            additional_guest_names: partySize > 0 ? (additionalGuestNamesEl.value.trim() || null) : null,
-            additional_guest_details: partySize > 0 ? (additionalGuestDetailsEl.value.trim() || null) : null,
+            additional_guest_names: additionalGuests > 0 ? (additionalGuestNamesEl.value.trim() || null) : null,
+            additional_guest_details: additionalGuests > 0 ? (additionalGuestDetailsEl.value.trim() || null) : null,
             updated_at: new Date().toISOString(),
         };
     }
@@ -288,7 +288,7 @@ export async function initRsvp() {
     if (existing) {
         fillForm(existing);
     } else {
-        partySizeEl.value = "0";
+        additionalGuestsEl.value = "0";
         toggleAdditionalGuestFields();
         loadedUpdatedAt = null;
         meta.textContent = "No RSVP saved yet.";
@@ -343,7 +343,7 @@ export async function initRsvp() {
                     .from("rsvp")
                     .update({
                         name: payload.name,
-                        party_size: payload.party_size,
+                        additional_guests: payload.additional_guests,
                         dietary_requirements: payload.dietary_requirements,
                         access_needs: payload.access_needs,
                         additional_guest_names: payload.additional_guest_names,
@@ -381,7 +381,7 @@ export async function initRsvp() {
                         .from("rsvp")
                         .update({
                             name: payload.name,
-                            party_size: payload.party_size,
+                            additional_guests: payload.additional_guests,
                             dietary_requirements: payload.dietary_requirements,
                             access_needs: payload.access_needs,
                             additional_guest_names: payload.additional_guest_names,

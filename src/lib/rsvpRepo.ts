@@ -10,12 +10,12 @@ import { getMyGroupId } from "./getMyGroupId";
  *   access_needs:         '[{"email":"a@x.com","value":""},{"email":"b@x.com","value":""}]'
  *
  * Legacy rows may contain plain strings (pre-migration); the client handles both.
- * `party_size` is the count of additional guests (plus-ones, children) beyond the named members.
+ * `additional_guests` is the count of additional guests (plus-ones, children) beyond the named members.
  */
 export type Rsvp = {
   group_id: string;
   name: string;
-  party_size: number;
+  additional_guests: number;
   dietary_requirements: string | null;
   access_needs: string | null;
   additional_guest_names: string | null;
@@ -37,7 +37,7 @@ export async function getMyRsvp(): Promise<Rsvp | null> {
 
 export async function upsertMyRsvp(input: {
   name: string;
-  party_size: number;
+  additional_guests: number;
   dietary_requirements?: string;
   access_needs?: string;
   additional_guest_names?: string;
@@ -48,7 +48,7 @@ export async function upsertMyRsvp(input: {
   const payload = {
     group_id: groupId,
     name: input.name.trim(),
-    party_size: input.party_size,
+    additional_guests: input.additional_guests,
     dietary_requirements: input.dietary_requirements?.trim() || null,
     access_needs: input.access_needs?.trim() || null,
     additional_guest_names: input.additional_guest_names?.trim() || null,
