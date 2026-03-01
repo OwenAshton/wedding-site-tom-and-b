@@ -18,6 +18,8 @@ export type Rsvp = {
   party_size: number;
   dietary_requirements: string | null;
   access_needs: string | null;
+  additional_guest_names: string | null;
+  additional_guest_details: string | null;
 };
 
 export async function getMyRsvp(): Promise<Rsvp | null> {
@@ -38,6 +40,8 @@ export async function upsertMyRsvp(input: {
   party_size: number;
   dietary_requirements?: string;
   access_needs?: string;
+  additional_guest_names?: string;
+  additional_guest_details?: string;
 }) {
   const groupId = await getMyGroupId();
 
@@ -47,6 +51,8 @@ export async function upsertMyRsvp(input: {
     party_size: input.party_size,
     dietary_requirements: input.dietary_requirements?.trim() || null,
     access_needs: input.access_needs?.trim() || null,
+    additional_guest_names: input.additional_guest_names?.trim() || null,
+    additional_guest_details: input.additional_guest_details?.trim() || null,
     updated_at: new Date().toISOString(),
   };
 

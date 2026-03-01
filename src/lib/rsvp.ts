@@ -15,6 +15,9 @@ export async function initRsvp() {
     const membersContainer = document.getElementById("membersContainer") as HTMLDivElement;
 
     const partySizeEl = document.getElementById("party_size") as HTMLInputElement;
+    const additionalGuestFields = document.getElementById("additionalGuestFields") as HTMLDivElement;
+    const additionalGuestNamesEl = document.getElementById("additional_guest_names") as HTMLInputElement;
+    const additionalGuestDetailsEl = document.getElementById("additional_guest_details") as HTMLTextAreaElement;
 
     const saveBtn = document.getElementById("saveBtn") as HTMLButtonElement;
     const signOutBtn = document.getElementById("signOutBtn") as HTMLButtonElement;
@@ -35,6 +38,13 @@ export async function initRsvp() {
     function devStorageKey(groupId: string) {
         return `dev:rsvp:${groupId}`;
     }
+
+    function toggleAdditionalGuestFields() {
+        const show = Number(partySizeEl.value) > 0;
+        additionalGuestFields.classList.toggle("hidden", !show);
+    }
+
+    partySizeEl.addEventListener("input", toggleAdditionalGuestFields);
 
     // --- Member section rendering ---
 
@@ -148,6 +158,9 @@ export async function initRsvp() {
         }
 
         partySizeEl.value = String(rsvp.party_size ?? 0);
+        additionalGuestNamesEl.value = rsvp.additional_guest_names ?? "";
+        additionalGuestDetailsEl.value = rsvp.additional_guest_details ?? "";
+        toggleAdditionalGuestFields();
         loadedUpdatedAt = rsvp.updated_at ?? null;
 
         meta.textContent = rsvp.updated_at
@@ -193,6 +206,8 @@ export async function initRsvp() {
             party_size: partySize,
             dietary_requirements: hasDietary ? JSON.stringify(dietaries) : null,
             access_needs: hasAccess ? JSON.stringify(accesses) : null,
+            additional_guest_names: partySize > 0 ? (additionalGuestNamesEl.value.trim() || null) : null,
+            additional_guest_details: partySize > 0 ? (additionalGuestDetailsEl.value.trim() || null) : null,
             updated_at: new Date().toISOString(),
         };
     }
@@ -274,6 +289,7 @@ export async function initRsvp() {
         fillForm(existing);
     } else {
         partySizeEl.value = "0";
+        toggleAdditionalGuestFields();
         loadedUpdatedAt = null;
         meta.textContent = "No RSVP saved yet.";
     }
@@ -330,6 +346,8 @@ export async function initRsvp() {
                         party_size: payload.party_size,
                         dietary_requirements: payload.dietary_requirements,
                         access_needs: payload.access_needs,
+                        additional_guest_names: payload.additional_guest_names,
+                        additional_guest_details: payload.additional_guest_details,
                         updated_at: payload.updated_at,
                     })
                     .eq("group_id", groupId)
@@ -366,6 +384,8 @@ export async function initRsvp() {
                             party_size: payload.party_size,
                             dietary_requirements: payload.dietary_requirements,
                             access_needs: payload.access_needs,
+                            additional_guest_names: payload.additional_guest_names,
+                            additional_guest_details: payload.additional_guest_details,
                             updated_at: payload.updated_at,
                         })
                         .eq("group_id", groupId)

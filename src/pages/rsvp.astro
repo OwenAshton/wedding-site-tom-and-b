@@ -22,7 +22,7 @@ import Layout from "../layouts/Layout.astro";
       <div id="membersContainer"></div>
 
       <label class="field">
-        <span class="field-label">Additional guests (plus-ones, children, etc.)</span>
+        <span class="field-label">Additional members of your party (children, etc.)</span>
         <input
           id="party_size"
           class="field-input"
@@ -32,6 +32,28 @@ import Layout from "../layouts/Layout.astro";
           required
         />
       </label>
+
+      <div id="additionalGuestFields" class="hidden">
+        <label class="field">
+          <span class="field-label">Names of additional guests</span>
+          <input
+            id="additional_guest_names"
+            class="field-input"
+            type="text"
+            placeholder="e.g. Sophie (age 4), James"
+          />
+        </label>
+
+        <label class="field" style="margin-top: 1rem;">
+          <span class="field-label">Additional details / dietary requirements</span>
+          <textarea
+            id="additional_guest_details"
+            class="field-input"
+            rows="2"
+            placeholder="e.g. highchair needed, nut allergy"
+          ></textarea>
+        </label>
+      </div>
 
       <div class="button-group">
         <button id="saveBtn" class="nav-button" type="submit">

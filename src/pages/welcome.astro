@@ -9,7 +9,7 @@ import Layout from "../layouts/Layout.astro";
     <p>
       We're so excited to have you celebrate with us on our special day.
       Enter your email and the 8-digit code from your invite email to confirm
-      your place and RSVP.
+      your place and view our wedding website.
     </p>
 
     <div id="statusBox" class="status-box hidden" role="status" aria-live="polite">
@@ -174,7 +174,7 @@ import Layout from "../layouts/Layout.astro";
         if (error) throw error;
 
         showStatus("Welcome! Redirecting…");
-        window.location.replace("/rsvp");
+        window.location.replace("/");
       } catch (err: any) {
         showStatus(
           "Invalid or expired code. Please try again or request a new one.",
