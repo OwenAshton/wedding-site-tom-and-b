@@ -1,11 +1,11 @@
-group,email,first_name
-smith-family,john@example.com,John
-smith-family,jane@example.com,Jane
-smith-family,grandma@example.com,Nana Smith
-jones-couple,alice@example.com,Alice
-jones-couple,bob@example.com,Bob
-solo-guest,charlie@example.com,Charlie
-the-johnsons,mike@example.com,Mike
-the-johnsons,sarah@example.com,Sarah
-the-johnsons,dave@example.com,Dave
-the-johnsons,lisa@example.com,Lisa
+first_name,last_name,email,group
+John,Smith,john@example.com,smith-family
+Jane,Smith,jane@example.com,smith-family
+,Smith,,smith-family
+Alice,Jones,alice@example.com,jones-couple
+Bob,Jones,bob@example.com,jones-couple
+Charlie,Brown,charlie@example.com,solo-guest
+Mike,Johnson,mike@example.com,the-johnsons
+Sarah,Johnson,sarah@example.com,the-johnsons
+,Johnson,,the-johnsons
+,Johnson,,the-johnsons

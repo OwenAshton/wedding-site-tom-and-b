@@ -35,6 +35,7 @@ function parseCsv(path) {
   const idxGroup = headers.indexOf("group");
   const idxEmail = headers.indexOf("email");
   const idxFirstName = headers.indexOf("first_name");
+  const idxLastName = headers.indexOf("last_name");
 
   if (idxEmail === -1) throw new Error("CSV must include a header column named: email");
   if (idxGroup === -1) throw new Error("CSV must include a header column named: group");
@@ -43,18 +44,18 @@ function parseCsv(path) {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(",").map((c) => c.trim());
 
-    const email = (cols[idxEmail] || "").toLowerCase();
-    if (!email) continue;
-
+    const email = (cols[idxEmail] || "").toLowerCase() || null;
     const group = cols[idxGroup] || "";
     if (!group) {
-      console.warn(`Row ${i + 1}: skipping ${email} — no group specified`);
+      console.warn(`Row ${i + 1}: skipping — no group specified`);
       continue;
     }
 
     const first_name = idxFirstName >= 0 ? cols[idxFirstName] || null : null;
+    const last_name = idxLastName >= 0 ? cols[idxLastName] || null : null;
 
-    rows.push({ group, email, first_name });
+    // Rows without an email are emailless members (no login, no invite sent)
+    rows.push({ group, email, first_name, last_name });
   }
 
   return rows;
@@ -69,10 +70,10 @@ function groupRows(rows) {
   return groups;
 }
 
-async function upsertInvitedEmail(email, groupId) {
+async function upsertInvitedEmail(email, groupId, displayName = null) {
   const { error } = await supabaseAdmin
     .from("invited_emails")
-    .upsert({ email, group_id: groupId }, { onConflict: "email" });
+    .upsert({ email, group_id: groupId, display_name: displayName }, { onConflict: "email" });
 
   if (error) throw error;
 }
@@ -175,18 +176,29 @@ async function main() {
     const groupId = crypto.randomUUID();
 
     const label = members
-      .map((m) => (m.first_name ? `${m.first_name} <${m.email}>` : m.email))
+      .map((m) => {
+        const name = [m.first_name, m.last_name].filter(Boolean).join(" ") || null;
+        return m.email ? `${name ?? m.email} <${m.email}>` : `${name ?? "Guest"} (no email)`;
+      })
       .join(" + ");
 
     console.log(`\nGroup "${groupLabel}" (${groupId}): ${label}`);
 
     if (!dryRun) {
-      // 1) allowlist/group mapping
-      for (const m of members) await upsertInvitedEmail(m.email, groupId);
-
-      // 2) send email (invite or OTP sign-in)
       for (const m of members) {
-        await inviteOrOtp(existingUsersByEmail, m.first_name, m.email);
+        if (m.email) {
+          // 1) allowlist/group mapping — display_name is full name for the RSVP page
+          const displayName = [m.first_name, m.last_name].filter(Boolean).join(" ") || null;
+          await upsertInvitedEmail(m.email, groupId, displayName);
+          // 2) send email (invite or OTP sign-in)
+          await inviteOrOtp(existingUsersByEmail, m.first_name, m.email);
+        } else {
+          // Emailless member — add to group with synthetic key, no login
+          const syntheticKey = `__guest__${crypto.randomUUID()}`;
+          const displayName = [m.first_name, m.last_name].filter(Boolean).join(" ") || "Guest";
+          await upsertInvitedEmail(syntheticKey, groupId, displayName);
+          console.log(`  Emailless member added: "${displayName}" (key: ${syntheticKey})`);
+        }
       }
     }
   }

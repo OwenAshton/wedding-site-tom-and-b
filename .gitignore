@@ -21,6 +21,7 @@ pnpm-debug.log*
 .DS_Store
 
 # data files
+guests.csv
 data/guests.csv
 
 # ai files

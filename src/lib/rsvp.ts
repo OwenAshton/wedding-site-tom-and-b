@@ -3,10 +3,12 @@ import { DEV_BYPASS_AUTH, requireInvited } from "./requireInvite";
 
 type MemberEntry = { email: string; name: string };
 type MemberValue = { email: string; value: string };
+// key is the stable identifier (real email or synthetic __guest__{uuid} for email-less members)
+type Member = { key: string; displayName: string };
 
 export async function initRsvp() {
     let loadedUpdatedAt: string | null = null;
-    let memberEmails: string[] = [];
+    let members: Member[] = [];
 
     const statusBox = document.getElementById("statusBox") as HTMLDivElement;
     const statusText = document.getElementById("statusText") as HTMLParagraphElement;
@@ -48,24 +50,32 @@ export async function initRsvp() {
 
     // --- Member section rendering ---
 
-    function renderMemberSections(emails: string[]) {
+    function renderMemberSections(memberList: Member[]) {
         membersContainer.innerHTML = "";
-        for (const email of emails) {
+        for (const member of memberList) {
             const fieldset = document.createElement("fieldset");
             fieldset.className = "member-section";
-            fieldset.dataset.email = email;
+            fieldset.dataset.email = member.key;
 
             const legend = document.createElement("legend");
             legend.className = "member-legend";
-            legend.textContent = email;
+            legend.textContent = member.displayName;
             fieldset.appendChild(legend);
+
+            // Keep legend in sync with the name input as the user types
+            fieldset.addEventListener("input", (e) => {
+                const target = e.target as HTMLInputElement;
+                if (target.classList.contains("member-name")) {
+                    legend.textContent = target.value.trim() || member.displayName;
+                }
+            });
 
             // Name
             const nameLabel = document.createElement("label");
             nameLabel.className = "field";
             nameLabel.innerHTML = `
                 <span class="field-label">Name</span>
-                <input class="field-input member-name" type="text" autocomplete="name" data-email="${email}" />
+                <input class="field-input member-name" type="text" autocomplete="name" data-email="${member.key}" />
             `;
             fieldset.appendChild(nameLabel);
 
@@ -74,7 +84,7 @@ export async function initRsvp() {
             dietaryLabel.className = "field";
             dietaryLabel.innerHTML = `
                 <span class="field-label">Dietary requirements</span>
-                <textarea class="field-input member-dietary" rows="2" placeholder="e.g. vegetarian, allergies, etc." data-email="${email}"></textarea>
+                <textarea class="field-input member-dietary" rows="2" placeholder="e.g. vegetarian, allergies, etc." data-email="${member.key}"></textarea>
             `;
             fieldset.appendChild(dietaryLabel);
 
@@ -83,7 +93,7 @@ export async function initRsvp() {
             accessLabel.className = "field";
             accessLabel.innerHTML = `
                 <span class="field-label">Access needs</span>
-                <textarea class="field-input member-access" rows="2" placeholder="e.g. step-free access, hearing assistance, etc." data-email="${email}"></textarea>
+                <textarea class="field-input member-access" rows="2" placeholder="e.g. step-free access, hearing assistance, etc." data-email="${member.key}"></textarea>
             `;
             fieldset.appendChild(accessLabel);
 
@@ -137,24 +147,32 @@ export async function initRsvp() {
     function fillForm(rsvp: any) {
         if (!rsvp) return;
 
-        const names = parseNameJson(rsvp.name, memberEmails);
-        const dietaries = parseValueJson(rsvp.dietary_requirements, memberEmails);
-        const accesses = parseValueJson(rsvp.access_needs, memberEmails);
+        const memberKeys = members.map(m => m.key);
+        const names = parseNameJson(rsvp.name, memberKeys);
+        const dietaries = parseValueJson(rsvp.dietary_requirements, memberKeys);
+        const accesses = parseValueJson(rsvp.access_needs, memberKeys);
 
-        for (const email of memberEmails) {
+        for (const member of members) {
+            const { key, displayName } = member;
             const nameInput = membersContainer.querySelector(
-                `input.member-name[data-email="${email}"]`
+                `input.member-name[data-email="${key}"]`
             ) as HTMLInputElement | null;
             const dietaryInput = membersContainer.querySelector(
-                `textarea.member-dietary[data-email="${email}"]`
+                `textarea.member-dietary[data-email="${key}"]`
             ) as HTMLTextAreaElement | null;
             const accessInput = membersContainer.querySelector(
-                `textarea.member-access[data-email="${email}"]`
+                `textarea.member-access[data-email="${key}"]`
             ) as HTMLTextAreaElement | null;
 
-            if (nameInput) nameInput.value = names.find(n => n.email === email)?.name ?? "";
-            if (dietaryInput) dietaryInput.value = dietaries.find(d => d.email === email)?.value ?? "";
-            if (accessInput) accessInput.value = accesses.find(a => a.email === email)?.value ?? "";
+            const name = names.find(n => n.email === key)?.name ?? "";
+            if (nameInput) nameInput.value = name;
+            if (dietaryInput) dietaryInput.value = dietaries.find(d => d.email === key)?.value ?? "";
+            if (accessInput) accessInput.value = accesses.find(a => a.email === key)?.value ?? "";
+
+            // Sync legend to saved name, fall back to displayName (never the raw key)
+            const fieldset = membersContainer.querySelector(`fieldset[data-email="${key}"]`);
+            const legend = fieldset?.querySelector(".member-legend");
+            if (legend) legend.textContent = name || displayName;
         }
 
         additionalGuestsEl.value = String(rsvp.additional_guests ?? 0);
@@ -173,20 +191,20 @@ export async function initRsvp() {
         const dietaries: MemberValue[] = [];
         const accesses: MemberValue[] = [];
 
-        for (const email of memberEmails) {
+        for (const { key } of members) {
             const nameInput = membersContainer.querySelector(
-                `input.member-name[data-email="${email}"]`
+                `input.member-name[data-email="${key}"]`
             ) as HTMLInputElement | null;
             const dietaryInput = membersContainer.querySelector(
-                `textarea.member-dietary[data-email="${email}"]`
+                `textarea.member-dietary[data-email="${key}"]`
             ) as HTMLTextAreaElement | null;
             const accessInput = membersContainer.querySelector(
-                `textarea.member-access[data-email="${email}"]`
+                `textarea.member-access[data-email="${key}"]`
             ) as HTMLTextAreaElement | null;
 
-            names.push({ email, name: nameInput?.value.trim() ?? "" });
-            dietaries.push({ email, value: dietaryInput?.value.trim() ?? "" });
-            accesses.push({ email, value: accessInput?.value.trim() ?? "" });
+            names.push({ email: key, name: nameInput?.value.trim() ?? "" });
+            dietaries.push({ email: key, value: dietaryInput?.value.trim() ?? "" });
+            accesses.push({ email: key, value: accessInput?.value.trim() ?? "" });
         }
 
         const hasAnyName = names.some(n => n.name.length > 0);
@@ -242,20 +260,26 @@ export async function initRsvp() {
         }
     }
 
-    // --- Fetch group member emails ---
+    // --- Fetch group members ---
 
-    async function fetchMemberEmails(groupId: string): Promise<string[]> {
+    async function fetchMembers(groupId: string): Promise<Member[]> {
         if (DEV_BYPASS_AUTH) {
-            return ["dev-user-1@example.com", "dev-user-2@example.com"];
+            return [
+                { key: "dev-user-1@example.com", displayName: "dev-user-1@example.com" },
+                { key: "dev-user-2@example.com", displayName: "dev-user-2@example.com" },
+            ];
         }
 
         const { data, error } = await supabase
             .from("invited_emails")
-            .select("email")
+            .select("email, display_name")
             .eq("group_id", groupId);
 
         if (error) throw error;
-        return (data ?? []).map((row: { email: string }) => row.email);
+        return (data ?? []).map((row: { email: string; display_name: string | null }) => ({
+            key: row.email,
+            displayName: row.display_name || row.email,
+        }));
     }
 
     // ===== Main init flow =====
@@ -266,20 +290,20 @@ export async function initRsvp() {
 
     const groupId = ctx.groupId;
 
-    // Fetch member emails and render sections
+    // Fetch group members and render sections
     try {
-        memberEmails = await fetchMemberEmails(groupId);
+        members = await fetchMembers(groupId);
     } catch (err: any) {
         showStatus(`Failed to load group members: ${err?.message ?? err}`, true);
         return;
     }
 
-    if (memberEmails.length === 0) {
+    if (members.length === 0) {
         // Fallback: single unknown member
-        memberEmails = ["unknown"];
+        members = [{ key: "unknown", displayName: "Guest" }];
     }
 
-    renderMemberSections(memberEmails);
+    renderMemberSections(members);
 
     const existing = await loadRsvp(groupId);
     form.classList.remove("hidden");
