@@ -65,7 +65,7 @@ function groupRows(rows) {
   const groups = new Map(); // group label -> array of { email, first_name }
   for (const r of rows) {
     if (!groups.has(r.group)) groups.set(r.group, []);
-    groups.get(r.group).push({ email: r.email, first_name: r.first_name });
+    groups.get(r.group).push({ email: r.email, first_name: r.first_name, last_name: r.last_name });
   }
   return groups;
 }
@@ -155,8 +155,9 @@ async function inviteOrOtp(existingUsersByEmail, firstName, email) {
 }
 
 async function main() {
-  const csvPath = process.argv[2] || "guests.csv";
-  const dryRun = process.argv.includes("--dry-run");
+  const args = process.argv.slice(2);
+  const dryRun = args.includes("--dry-run");
+  const csvPath = args.find((a) => !a.startsWith("--")) ?? "guests.csv";
 
   const rows = parseCsv(csvPath);
   if (rows.length === 0) {
