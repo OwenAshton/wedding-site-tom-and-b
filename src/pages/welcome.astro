@@ -30,9 +30,15 @@ import Layout from "../layouts/Layout.astro";
         />
       </label>
 
-      <button id="nextBtn" class="nav-button" type="submit">
-        Next
-      </button>
+      <div class="button-group">
+        <button id="nextBtn" class="nav-button" type="submit">
+          I have my code
+        </button>
+
+        <button id="newCodeBtn" class="nav-button" type="button">
+          Send me a new code
+        </button>
+      </div>
     </form>
 
     <!-- Step 2: OTP code entry (hidden initially) -->
@@ -76,6 +82,12 @@ import Layout from "../layouts/Layout.astro";
       </p>
     </form>
 
+    <!-- Shown when the user already has a session (e.g. from invite link PKCE exchange) -->
+    <div id="signedInPanel" class="welcome-form hidden">
+      <p>You're all set! Click below to view the wedding website.</p>
+      <a href="/" class="nav-button continue-button">Continue to the site</a>
+    </div>
+
     <p class="returning-user">
       Already confirmed before?
       <a href="/login-error">Sign in here instead.</a>
@@ -100,6 +112,19 @@ import Layout from "../layouts/Layout.astro";
 
     let currentEmail = "";
     let resendCooldown = false;
+    // Track whether the user resent a code (resend uses type "email", not "invite")
+    let usedResend = false;
+    const signedInPanel = document.getElementById("signedInPanel") as HTMLDivElement;
+
+    // — Check for existing session (e.g. from PKCE auto-exchange after invite link redirect) —
+    // getSession() waits for client initialization (including PKCE code exchange) to complete.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        emailForm.classList.add("hidden");
+        otpForm.classList.add("hidden");
+        signedInPanel.classList.remove("hidden");
+      }
+    });
 
     // — Helpers —
     function showStatus(text: string, isError = false) {
@@ -150,6 +175,7 @@ import Layout from "../layouts/Layout.astro";
 
       currentEmail = email;
       sentToEmail.textContent = email;
+      usedResend = false;
       hideStatus();
       showStep("otp");
     });
@@ -165,10 +191,11 @@ import Layout from "../layouts/Layout.astro";
       hideStatus();
 
       try {
+        // Original invite code has type "invite"; a resent code (via signInWithOtp) has type "email"
         const { error } = await supabase.auth.verifyOtp({
           email: currentEmail,
           token: code,
-          type: "invite",
+          type: usedResend ? "email" : "invite",
         });
 
         if (error) throw error;
@@ -193,6 +220,14 @@ import Layout from "../layouts/Layout.astro";
     });
 
     // — Resend code (sends a fresh OTP via signInWithOtp) —
+    async function sendNewCode(email: string) {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: false },
+      });
+      if (error) throw error;
+    }
+
     resendBtn.addEventListener("click", async () => {
       if (!currentEmail || resendCooldown) return;
       resendBtn.disabled = true;
@@ -200,18 +235,45 @@ import Layout from "../layouts/Layout.astro";
       hideStatus();
 
       try {
-        const { error } = await supabase.auth.signInWithOtp({
-          email: currentEmail,
-          options: { shouldCreateUser: false },
-        });
-        if (error) throw error;
+        await sendNewCode(currentEmail);
 
+        usedResend = true;
         showStatus("New code sent — check your email.");
         startResendCooldown();
       } catch (err: any) {
         showStatus(`Couldn't resend: ${err.message ?? err}`, true);
         resendBtn.disabled = false;
         resendBtn.textContent = "Send a new code";
+      }
+    });
+
+    // — "Send me a new code" button (in the email form) —
+    const newCodeBtn = document.getElementById("newCodeBtn") as HTMLButtonElement;
+
+    newCodeBtn.addEventListener("click", async () => {
+      const email = emailEl.value.trim().toLowerCase();
+      if (!email) {
+        emailEl.reportValidity();
+        return;
+      }
+
+      newCodeBtn.disabled = true;
+      newCodeBtn.textContent = "Sending…";
+      hideStatus();
+
+      try {
+        await sendNewCode(email);
+
+        currentEmail = email;
+        sentToEmail.textContent = email;
+        usedResend = true;
+        showStatus("New code sent — check your email.");
+        showStep("otp");
+      } catch (err: any) {
+        showStatus(`Couldn't send code: ${err.message ?? err}`, true);
+      } finally {
+        newCodeBtn.disabled = false;
+        newCodeBtn.textContent = "Send me a new code";
       }
     });
   </script>
