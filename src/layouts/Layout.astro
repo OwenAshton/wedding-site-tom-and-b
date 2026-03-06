@@ -32,7 +32,31 @@ const { title } = Astro.props as Props;
 					)
 				)
 			}
+			<span id="adminNavLink" style="display:none;">
+				<NavItem text="Admin" href="/admin" aria-label="Admin">
+					Admin
+				</NavItem>
+			</span>
 		</Navbar>
+
+		<script>
+			import { supabase } from "../lib/supabaseClient";
+
+			supabase.auth.getSession().then(({ data: { session } }) => {
+				if (!session) return;
+				supabase
+					.from("app_users")
+					.select("is_admin")
+					.eq("user_id", session.user.id)
+					.single()
+					.then(({ data }) => {
+						if (data?.is_admin) {
+							const el = document.getElementById("adminNavLink");
+							if (el) el.style.display = "";
+						}
+					});
+			});
+		</script>
 		<main>
 			<slot />
 		</main>

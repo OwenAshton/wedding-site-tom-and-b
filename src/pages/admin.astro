@@ -1,0 +1,439 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Admin — RSVPs">
+  <div class="admin-wrapper">
+    <h1>RSVP Admin</h1>
+
+    <div id="statusBox" class="status-box hidden" role="status" aria-live="polite">
+      <p id="statusText"></p>
+    </div>
+
+    <div id="checking">
+      <p>Checking access…</p>
+    </div>
+
+    <div id="content" class="hidden">
+      <div class="toolbar">
+        <button id="refreshBtn" class="nav-button" type="button">Refresh</button>
+        <button id="downloadBtn" class="nav-button" type="button">Download CSV</button>
+        <button id="signOutBtn" class="nav-button" type="button">Sign out</button>
+      </div>
+
+      <div class="table-scroll">
+        <table id="rsvpTable">
+          <thead>
+            <tr>
+              <th>Group</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Dietary Requirements</th>
+              <th>Access Needs</th>
+              <th>Additional Guests</th>
+              <th>Additional Guest Names</th>
+              <th>Additional Guest Details</th>
+              <th>Last Updated</th>
+            </tr>
+          </thead>
+          <tbody id="rsvpBody"></tbody>
+        </table>
+      </div>
+
+      <p id="summary" class="summary"></p>
+    </div>
+  </div>
+
+  <script>
+    import { supabase } from "../lib/supabaseClient";
+
+    type MemberEntry = { email: string; name: string };
+    type MemberValue = { email: string; value: string };
+
+    const statusBox = document.getElementById("statusBox") as HTMLDivElement;
+    const statusText = document.getElementById("statusText") as HTMLParagraphElement;
+    const checking = document.getElementById("checking") as HTMLDivElement;
+    const content = document.getElementById("content") as HTMLDivElement;
+    const rsvpBody = document.getElementById("rsvpBody") as HTMLTableSectionElement;
+    const summary = document.getElementById("summary") as HTMLParagraphElement;
+    const refreshBtn = document.getElementById("refreshBtn") as HTMLButtonElement;
+    const downloadBtn = document.getElementById("downloadBtn") as HTMLButtonElement;
+    const signOutBtn = document.getElementById("signOutBtn") as HTMLButtonElement;
+
+    function showStatus(text: string, isError = false) {
+      statusBox.classList.remove("hidden");
+      statusText.textContent = text;
+      statusText.style.fontWeight = isError ? "600" : "400";
+    }
+
+    // -- Auth: check user is admin --
+    async function checkAdmin(): Promise<boolean> {
+      const { data: sessionRes } = await supabase.auth.getSession();
+      const session = sessionRes.session;
+      if (!session) {
+        window.location.replace("/login-error");
+        return false;
+      }
+
+      const userId = session.user.id;
+      const { data, error } = await supabase
+        .from("app_users")
+        .select("is_admin")
+        .eq("user_id", userId)
+        .single();
+
+      if (error || !data?.is_admin) {
+        showStatus("You do not have admin access.", true);
+        checking.classList.add("hidden");
+        return false;
+      }
+
+      return true;
+    }
+
+    // -- Parse JSON array columns into per-member maps --
+    function parseNameJson(raw: string | null): MemberEntry[] {
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+      return [{ email: "", name: raw }];
+    }
+
+    function parseValueJson(raw: string | null): MemberValue[] {
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+      return [{ email: "", value: raw }];
+    }
+
+    // -- Flatten RSVP rows into one row per member --
+    type FlatRow = {
+      groupId: string;
+      groupLabel: string;
+      name: string;
+      email: string;
+      dietary: string;
+      access: string;
+      additionalGuests: number;
+      additionalGuestNames: string;
+      additionalGuestDetails: string;
+      updatedAt: string;
+    };
+
+    function flattenRsvps(
+      rsvps: any[],
+      emailsByGroup: Map<string, { email: string; display_name: string | null }[]>
+    ): FlatRow[] {
+      const rows: FlatRow[] = [];
+
+      for (const rsvp of rsvps) {
+        const groupId = rsvp.group_id;
+        const members = emailsByGroup.get(groupId) ?? [];
+        const names = parseNameJson(rsvp.name);
+        const dietaries = parseValueJson(rsvp.dietary_requirements);
+        const accesses = parseValueJson(rsvp.access_needs);
+
+        // Build a label for the group from display names
+        const groupLabel = members
+          .map(m => m.display_name || m.email)
+          .filter(n => !n.startsWith("__guest__"))
+          .join(", ") || groupId.slice(0, 8);
+
+        // One row per name entry in the RSVP
+        if (names.length === 0) {
+          // No names stored yet — still show a row per invited member
+          for (const m of members) {
+            rows.push({
+              groupId,
+              groupLabel,
+              name: m.display_name || "",
+              email: m.email.startsWith("__guest__") ? "" : m.email,
+              dietary: "",
+              access: "",
+              additionalGuests: rsvp.additional_guests ?? 0,
+              additionalGuestNames: rsvp.additional_guest_names ?? "",
+              additionalGuestDetails: rsvp.additional_guest_details ?? "",
+              updatedAt: rsvp.updated_at ?? "",
+            });
+          }
+        } else {
+          for (const entry of names) {
+            const dietary = dietaries.find(d => d.email === entry.email)?.value ?? "";
+            const access = accesses.find(a => a.email === entry.email)?.value ?? "";
+            const member = members.find(m => m.email === entry.email);
+
+            rows.push({
+              groupId,
+              groupLabel,
+              name: entry.name,
+              email: entry.email.startsWith("__guest__") ? "" : entry.email,
+              dietary,
+              access,
+              additionalGuests: rsvp.additional_guests ?? 0,
+              additionalGuestNames: rsvp.additional_guest_names ?? "",
+              additionalGuestDetails: rsvp.additional_guest_details ?? "",
+              updatedAt: rsvp.updated_at ?? "",
+            });
+          }
+        }
+      }
+
+      // Also include invited members whose group has NO rsvp row at all
+      for (const [groupId, members] of emailsByGroup) {
+        const hasRsvp = rsvps.some(r => r.group_id === groupId);
+        if (hasRsvp) continue;
+
+        const groupLabel = members
+          .map(m => m.display_name || m.email)
+          .filter(n => !n.startsWith("__guest__"))
+          .join(", ") || groupId.slice(0, 8);
+
+        for (const m of members) {
+          rows.push({
+            groupId,
+            groupLabel,
+            name: m.display_name || "",
+            email: m.email.startsWith("__guest__") ? "" : m.email,
+            dietary: "",
+            access: "",
+            additionalGuests: 0,
+            additionalGuestNames: "",
+            additionalGuestDetails: "",
+            updatedAt: "",
+          });
+        }
+      }
+
+      return rows;
+    }
+
+    // -- Render table --
+    function renderTable(rows: FlatRow[]) {
+      rsvpBody.innerHTML = "";
+
+      for (const row of rows) {
+        const tr = document.createElement("tr");
+        if (!row.updatedAt) tr.classList.add("no-rsvp");
+
+        const cells = [
+          row.groupLabel,
+          row.name,
+          row.email,
+          row.dietary,
+          row.access,
+          String(row.additionalGuests),
+          row.additionalGuestNames,
+          row.additionalGuestDetails,
+          row.updatedAt ? new Date(row.updatedAt).toLocaleString() : "Not yet",
+        ];
+
+        for (const text of cells) {
+          const td = document.createElement("td");
+          td.textContent = text;
+          tr.appendChild(td);
+        }
+
+        rsvpBody.appendChild(tr);
+      }
+
+      const responded = new Set(rows.filter(r => r.updatedAt).map(r => r.groupId)).size;
+      const total = new Set(rows.map(r => r.groupId)).size;
+      const totalGuests = rows.filter(r => r.updatedAt).length
+        + rows.filter(r => r.updatedAt).reduce((sum, r) => sum + r.additionalGuests, 0);
+
+      summary.textContent = `${responded} of ${total} groups responded | ${rows.length} invited members | ${totalGuests} total guests (incl. additional)`;
+    }
+
+    // -- CSV export --
+    function toCsv(rows: FlatRow[]): string {
+      const headers = [
+        "Group", "Name", "Email", "Dietary Requirements", "Access Needs",
+        "Additional Guests", "Additional Guest Names", "Additional Guest Details", "Last Updated",
+      ];
+
+      const escape = (v: string) => {
+        if (v.includes(",") || v.includes('"') || v.includes("\n")) {
+          return '"' + v.replace(/"/g, '""') + '"';
+        }
+        return v;
+      };
+
+      const lines = [headers.map(escape).join(",")];
+      for (const row of rows) {
+        lines.push([
+          escape(row.groupLabel),
+          escape(row.name),
+          escape(row.email),
+          escape(row.dietary),
+          escape(row.access),
+          String(row.additionalGuests),
+          escape(row.additionalGuestNames),
+          escape(row.additionalGuestDetails),
+          row.updatedAt ? new Date(row.updatedAt).toISOString() : "",
+        ].join(","));
+      }
+      return lines.join("\n");
+    }
+
+    function downloadCsv(rows: FlatRow[]) {
+      const csv = toCsv(rows);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `rsvps-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // -- Load data --
+    let latestRows: FlatRow[] = [];
+
+    async function loadData() {
+      // Fetch all rsvps and all invited emails in parallel
+      const [rsvpRes, emailRes] = await Promise.all([
+        supabase.from("rsvp").select("*"),
+        supabase.from("invited_emails").select("email, group_id, display_name"),
+      ]);
+
+      if (rsvpRes.error) throw rsvpRes.error;
+      if (emailRes.error) throw emailRes.error;
+
+      const emailsByGroup = new Map<string, { email: string; display_name: string | null }[]>();
+      for (const row of emailRes.data ?? []) {
+        if (!emailsByGroup.has(row.group_id)) emailsByGroup.set(row.group_id, []);
+        emailsByGroup.get(row.group_id)!.push({ email: row.email, display_name: row.display_name });
+      }
+
+      latestRows = flattenRsvps(rsvpRes.data ?? [], emailsByGroup);
+      renderTable(latestRows);
+    }
+
+    // -- Init --
+    (async () => {
+      const isAdmin = await checkAdmin();
+      if (!isAdmin) return;
+
+      checking.classList.add("hidden");
+      content.classList.remove("hidden");
+
+      try {
+        await loadData();
+      } catch (err: any) {
+        showStatus(`Failed to load data: ${err?.message ?? err}`, true);
+      }
+    })();
+
+    // -- Event handlers --
+    refreshBtn.addEventListener("click", async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = "Loading…";
+      try {
+        await loadData();
+        showStatus("Refreshed.");
+      } catch (err: any) {
+        showStatus(`Refresh failed: ${err?.message ?? err}`, true);
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = "Refresh";
+      }
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (latestRows.length === 0) {
+        showStatus("No data to download.", true);
+        return;
+      }
+      downloadCsv(latestRows);
+    });
+
+    signOutBtn.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.replace("/login-error");
+    });
+  </script>
+</Layout>
+
+<style>
+  .hidden { display: none !important; }
+
+  /* Break out of the global main { max-width: 80ch } constraint */
+  .admin-wrapper {
+    width: 90vw;
+    max-width: none;
+    margin-left: calc(50% - 45vw);
+    padding: 0 1.5rem;
+    box-sizing: border-box;
+  }
+
+  .status-box {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .toolbar .nav-button {
+    width: auto;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+    margin-top: 1rem;
+  }
+
+  #rsvpTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  #rsvpTable th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid currentColor;
+    font-family: "Lanenar", sans-serif;
+    position: sticky;
+    top: 0;
+    background: var(--color-bg, #fff);
+    white-space: nowrap;
+  }
+
+  /* td and tr are dynamically created — need :global() to pierce Astro scoping */
+  #rsvpTable :global(td) {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid currentColor;
+    white-space: nowrap;
+  }
+
+  /* Group column: give it room and allow wrapping */
+  #rsvpTable :global(td:nth-child(1)) { min-width: 10rem; white-space: normal; }
+  /* Text-heavy columns: dietary, access, guest names, guest details */
+  #rsvpTable :global(td:nth-child(4)),
+  #rsvpTable :global(td:nth-child(5)),
+  #rsvpTable :global(td:nth-child(7)),
+  #rsvpTable :global(td:nth-child(8)) { max-width: 18rem; white-space: normal; }
+
+  #rsvpTable :global(tr.no-rsvp td) {
+    opacity: 0.5;
+    font-style: italic;
+  }
+
+  .summary {
+    margin-top: 1.5rem;
+    font-size: 0.9em;
+    opacity: 0.8;
+  }
+</style>
