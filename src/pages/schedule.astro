@@ -9,11 +9,15 @@ import ScheduleComponent from "../components/Schedule/Schedule";
 
   <main id="content" class="hidden">
     <h3>Schedule</h3>
-    <ScheduleComponent client:load />
+    <div id="schedule-mount"></div>
   </main>
 
   <script>
     import { requireInvited } from "../lib/requireInvite";
+    import { getIsEvening } from "../lib/getIsEvening";
+    import { createElement } from "react";
+    import { createRoot } from "react-dom/client";
+    import ScheduleComponent from "../components/Schedule/Schedule";
 
     (async () => {
       const checking = document.getElementById("checking");
@@ -22,8 +26,13 @@ import ScheduleComponent from "../components/Schedule/Schedule";
       const ctx = await requireInvited();
       if (!ctx) return;
 
+      const isEvening = await getIsEvening(ctx.groupId);
+
       checking.classList.add("hidden");
       content.classList.remove("hidden");
+
+      const mount = document.getElementById("schedule-mount");
+      createRoot(mount).render(createElement(ScheduleComponent, { isEvening }));
     })();
   </script>
 </Layout>

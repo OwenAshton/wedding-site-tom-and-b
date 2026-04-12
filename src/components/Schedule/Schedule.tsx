@@ -8,7 +8,19 @@ const dinnerIcon = '/icons/scheduleIcons/005-wedding-dinner.png';
 const discoIcon = '/icons/scheduleIcons/006-disco-ball.png';
 const carriagesIcon = '/icons/scheduleIcons/003-wedding-car.png';
 
-const ScheduleComponent = () : FC<{}> =>{
+const allItems = [
+    { iconUrl: martiniIcon, text: "Arrivals & Welcome Drinks", time: "12:30pm", eveningOnly: false },
+    { iconUrl: ceremonyIcon, text: "Ceremony", time: "1:30pm", eveningOnly: false },
+    { iconUrl: photoIcon, text: "Photos & Garden/Pub Games", time: "3:00pm", eveningOnly: false },
+    { iconUrl: dinnerIcon, text: "Dinner & Drinks", time: "4:00pm", eveningOnly: false },
+    { iconUrl: martiniIcon, text: "Evening Guests Arrive", time: "6:30pm", eveningOnly: true },
+    { iconUrl: discoIcon, text: "First Dance & Disco", time: "7:00pm", eveningOnly: true },
+    { iconUrl: dinnerIcon, text: "Pizzas", time: "8:45pm", eveningOnly: true },
+    { iconUrl: martiniIcon, text: "Last Orders", time: "11:15pm", eveningOnly: true },
+    { iconUrl: carriagesIcon, text: "Carriages", time: "12:00am", eveningOnly: true },
+];
+
+const ScheduleComponent = ({ isEvening = false }: { isEvening?: boolean }) : FC<{}> =>{
     const [isMobile, setMobileView] = useState(true);
 
     const handleIsMobile = () => {
@@ -28,62 +40,19 @@ const ScheduleComponent = () : FC<{}> =>{
       };
     }, []);
 
+    const items = isEvening ? allItems.filter((item) => item.eveningOnly) : allItems;
+
     return (
         <div className={isMobile?"schedule-container-mobile":"schedule-container"}>
-            <ScheduleItem
-                iconUrl={martiniIcon}
-                text={"Arrivals & Welcome Drinks"}
-                time={"12:30pm"}
-                index={1}
-                isLast={false}/>
-            <ScheduleItem
-                iconUrl={ceremonyIcon}
-                text={"Ceremony"}
-                time={"1:30pm"}
-                index={2}
-                isLast={false}/>
-            <ScheduleItem
-                iconUrl={photoIcon}
-                text={"Photos & Garden/Pub Games"}
-                time={"3:00pm"}
-                index={3}
-                isLast={false}/>
-            <ScheduleItem
-                iconUrl={dinnerIcon}
-                text={"Dinner & Drinks"}
-                time={"4:00pm"}
-                index={4}
-                isLast={false}/>
-            <ScheduleItem
-                iconUrl={martiniIcon}
-                text={"Evening Guests Arrive"}
-                time={"6:30pm"}
-                index={5}
-                isLast={false}/>
-            <ScheduleItem
-                iconUrl={discoIcon}
-                text={"First Dance & Disco"}
-                time={"7:00pm"}
-                index={6}
-                isLast={false}/>
-            <ScheduleItem
-                iconUrl={dinnerIcon}
-                text={"Pizzas"}
-                time={"8:45pm"}
-                index={7}
-                isLast={false}/>
-            <ScheduleItem
-                iconUrl={martiniIcon}
-                text={"Last Orders"}
-                time={"11:15pm"}
-                index={8}
-                isLast={false}/>
-            <ScheduleItem
-                iconUrl={carriagesIcon}
-                text={"Carriages"}
-                time={"12:00am"}
-                index={9}
-                isLast={true}/>
+            {items.map((item, idx) => (
+                <ScheduleItem
+                    key={idx}
+                    iconUrl={item.iconUrl}
+                    text={item.text}
+                    time={item.time}
+                    index={idx + 1}
+                    isLast={idx === items.length - 1}/>
+            ))}
         </div>
         )
 }
