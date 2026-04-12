@@ -181,7 +181,8 @@ async function main() {
     const label = members
       .map((m) => {
         const name = [m.first_name, m.last_name].filter(Boolean).join(" ") || null;
-        return m.email ? `${name ?? m.email} <${m.email}>` : `${name ?? "Guest"} (no email)`;
+        const evening = m.is_evening ? " [evening]" : "";
+        return m.email ? `${name ?? m.email} <${m.email}>${evening}` : `${name ?? "Guest"} (no email)${evening}`;
       })
       .join(" + ");
 

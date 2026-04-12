@@ -28,6 +28,7 @@ import Layout from "../layouts/Layout.astro";
               <th>Group</th>
               <th>Name</th>
               <th>Email</th>
+              <th>Evening</th>
               <th>Dietary Requirements</th>
               <th>Access Needs</th>
               <th>Additional Guests</th>
@@ -116,6 +117,7 @@ import Layout from "../layouts/Layout.astro";
       groupLabel: string;
       name: string;
       email: string;
+      isEvening: boolean;
       dietary: string;
       access: string;
       additionalGuests: number;
@@ -126,7 +128,7 @@ import Layout from "../layouts/Layout.astro";
 
     function flattenRsvps(
       rsvps: any[],
-      emailsByGroup: Map<string, { email: string; display_name: string | null }[]>
+      emailsByGroup: Map<string, { email: string; display_name: string | null; is_evening: boolean }[]>
     ): FlatRow[] {
       const rows: FlatRow[] = [];
 
@@ -152,6 +154,7 @@ import Layout from "../layouts/Layout.astro";
               groupLabel,
               name: m.display_name || "",
               email: m.email.startsWith("__guest__") ? "" : m.email,
+              isEvening: m.is_evening,
               dietary: "",
               access: "",
               additionalGuests: rsvp.additional_guests ?? 0,
@@ -171,6 +174,7 @@ import Layout from "../layouts/Layout.astro";
               groupLabel,
               name: entry.name,
               email: entry.email.startsWith("__guest__") ? "" : entry.email,
+              isEvening: member?.is_evening ?? false,
               dietary,
               access,
               additionalGuests: rsvp.additional_guests ?? 0,
@@ -198,6 +202,7 @@ import Layout from "../layouts/Layout.astro";
             groupLabel,
             name: m.display_name || "",
             email: m.email.startsWith("__guest__") ? "" : m.email,
+            isEvening: m.is_evening,
             dietary: "",
             access: "",
             additionalGuests: 0,
@@ -223,6 +228,7 @@ import Layout from "../layouts/Layout.astro";
           row.groupLabel,
           row.name,
           row.email,
+          row.isEvening ? "Yes" : "",
           row.dietary,
           row.access,
           String(row.additionalGuests),
@@ -251,7 +257,7 @@ import Layout from "../layouts/Layout.astro";
     // -- CSV export --
     function toCsv(rows: FlatRow[]): string {
       const headers = [
-        "Group", "Name", "Email", "Dietary Requirements", "Access Needs",
+        "Group", "Name", "Email", "Evening", "Dietary Requirements", "Access Needs",
         "Additional Guests", "Additional Guest Names", "Additional Guest Details", "Last Updated",
       ];
 
@@ -268,6 +274,7 @@ import Layout from "../layouts/Layout.astro";
           escape(row.groupLabel),
           escape(row.name),
           escape(row.email),
+          row.isEvening ? "Yes" : "",
           escape(row.dietary),
           escape(row.access),
           String(row.additionalGuests),
@@ -297,16 +304,16 @@ import Layout from "../layouts/Layout.astro";
       // Fetch all rsvps and all invited emails in parallel
       const [rsvpRes, emailRes] = await Promise.all([
         supabase.from("rsvp").select("*"),
-        supabase.from("invited_emails").select("email, group_id, display_name"),
+        supabase.from("invited_emails").select("email, group_id, display_name, is_evening"),
       ]);
 
       if (rsvpRes.error) throw rsvpRes.error;
       if (emailRes.error) throw emailRes.error;
 
-      const emailsByGroup = new Map<string, { email: string; display_name: string | null }[]>();
+      const emailsByGroup = new Map<string, { email: string; display_name: string | null; is_evening: boolean }[]>();
       for (const row of emailRes.data ?? []) {
         if (!emailsByGroup.has(row.group_id)) emailsByGroup.set(row.group_id, []);
-        emailsByGroup.get(row.group_id)!.push({ email: row.email, display_name: row.display_name });
+        emailsByGroup.get(row.group_id)!.push({ email: row.email, display_name: row.display_name, is_evening: row.is_evening ?? false });
       }
 
       latestRows = flattenRsvps(rsvpRes.data ?? [], emailsByGroup);
@@ -421,10 +428,10 @@ import Layout from "../layouts/Layout.astro";
   /* Group column: give it room and allow wrapping */
   #rsvpTable :global(td:nth-child(1)) { min-width: 10rem; white-space: normal; }
   /* Text-heavy columns: dietary, access, guest names, guest details */
-  #rsvpTable :global(td:nth-child(4)),
   #rsvpTable :global(td:nth-child(5)),
-  #rsvpTable :global(td:nth-child(7)),
-  #rsvpTable :global(td:nth-child(8)) { max-width: 18rem; white-space: normal; }
+  #rsvpTable :global(td:nth-child(6)),
+  #rsvpTable :global(td:nth-child(8)),
+  #rsvpTable :global(td:nth-child(9)) { max-width: 18rem; white-space: normal; }
 
   #rsvpTable :global(tr.no-rsvp td) {
     opacity: 0.5;
