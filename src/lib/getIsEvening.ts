@@ -10,10 +10,13 @@ export async function getIsEvening(groupId: string): Promise<boolean> {
     return import.meta.env.PUBLIC_DEV_BYPASS_EVENING === "true";
   }
 
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user?.email) return false;
+
   const { data, error } = await supabase
     .from("invited_emails")
     .select("is_evening")
-    .eq("group_id", groupId)
+    .eq("email", session.user.email)
     .limit(1)
     .single();
 

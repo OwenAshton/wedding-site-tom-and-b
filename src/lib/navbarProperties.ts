@@ -5,4 +5,5 @@ export const navbarProperties = [
 	{ "aria-label": "Schedule", text: "Schedule", href: "/schedule" },
 	{ "aria-label": "Gifts", text: "Gifts", href: "/gifts" },
 	{ "aria-label": "FAQs", text: "FAQs", href: "/faqs", subDetails: ["DRESS CODE", "EVE GUESTS", "KIDS", "PLUS ONES"] },
+	{ "aria-label": "Log out", text: "Log out", href: "/logout" },
 ];

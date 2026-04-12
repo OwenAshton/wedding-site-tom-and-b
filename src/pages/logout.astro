@@ -1,0 +1,17 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout title="Logging out…">
+  <main class="p-6 text-center">
+    <h1>Logging out…</h1>
+  </main>
+
+  <script>
+    import { supabase } from "../lib/supabaseClient";
+
+    (async () => {
+      await supabase.auth.signOut();
+      window.location.replace("/welcome");
+    })();
+  </script>
+</Layout>
